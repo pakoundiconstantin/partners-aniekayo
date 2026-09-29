@@ -19,7 +19,7 @@ function readXsrfCookie(): string {
 }
 
 async function ensureCsrfCookie(): Promise<void> {
-  if (!apiBaseUrl || readXsrfCookie()) return
+  if (!apiBaseUrl) return
   if (!csrfCookieRequest) {
     csrfCookieRequest = fetch(`${apiBaseUrl}/sanctum/csrf-cookie`, {
       headers: { Accept: 'application/json' },
@@ -31,7 +31,11 @@ async function ensureCsrfCookie(): Promise<void> {
       throw error
     })
   }
-  await csrfCookieRequest
+  try {
+    await csrfCookieRequest
+  } finally {
+    csrfCookieRequest = undefined
+  }
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -39,6 +43,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 
   const { method = 'GET', body, token } = options
   const changesState = method !== 'GET'
+  const usesPartnerSession = path === '/partners/documents' || path.startsWith('/partners/documents/')
   if (changesState) await ensureCsrfCookie()
 
   const isFormData = body instanceof FormData
@@ -50,7 +55,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
       ...(body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    credentials: 'include',
+    credentials: changesState || usesPartnerSession ? 'include' : 'omit',
     body: body ? isFormData ? body : JSON.stringify(body) : undefined,
   })
   const payload: unknown = await response.json().catch(() => ({}))

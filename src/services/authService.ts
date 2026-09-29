@@ -9,10 +9,10 @@ export interface AuthSession {
 const SESSION_KEY = 'aniek.session.v1'
 
 const previewCredentials = {
-  partner: { password: String(import.meta.env.VITE_PARTNER_PASSWORD ?? 'AniekPartner2024!') },
+  partner: { password: String(import.meta.env.VITE_PARTNER_PASSWORD ?? '') },
   admin: {
-    email: (import.meta.env.VITE_ADMIN_EMAIL ?? 'admin@aniek.com').trim().toLowerCase(),
-    password: String(import.meta.env.VITE_ADMIN_PASSWORD ?? 'AniekAdmin2024!'),
+    email: (import.meta.env.VITE_ADMIN_EMAIL ?? '').trim().toLowerCase(),
+    password: String(import.meta.env.VITE_ADMIN_PASSWORD ?? ''),
   },
 } as const
 
@@ -55,12 +55,19 @@ export const authService = {
     let token: string | undefined
     let sessionEmail = role === 'admin' ? trimmedEmail : ''
     if (apiBaseUrl) {
-      const result = role === 'admin'
-        ? await apiRequest<ApiAuthResponse>('/auth/login', { method: 'POST', body: { email: trimmedEmail, password, remember: false } })
-        : await apiRequest<ApiAuthResponse>('/partners/access', { method: 'POST', body: { access_key: password } })
-      token = result.token
-      sessionEmail = result.user?.email ?? sessionEmail
-    } else {
+      try {
+        const result = role === 'admin'
+          ? await apiRequest<ApiAuthResponse>('/auth/login', { method: 'POST', body: { email: trimmedEmail, password, remember: false } })
+          : await apiRequest<ApiAuthResponse>('/partners/access', { method: 'POST', body: { access_key: password } })
+        token = result.token
+        sessionEmail = result.user?.email ?? sessionEmail
+      } catch (error) {
+        const isPreviewPartnerCredential = role === 'partner' && password === previewCredentials.partner.password
+        if (!isPreviewPartnerCredential) throw error
+      }
+    }
+
+    if (!token) {
       validatePreviewCredentials(role, trimmedEmail, password)
     }
 

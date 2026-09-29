@@ -7,7 +7,6 @@ import { authService } from './authService'
 
 const DATA_KEY = 'aniek.content.v1'
 const legacyCountryIds: Record<string, string> = { TG: 'togo', ML: 'mali', CI: 'cote-d-ivoire', BF: 'burkina-faso', NE: 'niger' }
-const emptySnapshot: AppSnapshot = { partners: [], categories: [], countries: [], teamSheets: [], activity: [] }
 interface ApiEnvelope<T> {
   data: T
 }
@@ -141,9 +140,7 @@ function loadSnapshot(): AppSnapshot {
 }
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState(() => apiBaseUrl
-    ? { ...emptySnapshot, countries: initialSnapshot.countries }
-    : loadSnapshot())
+  const [data, setData] = useState(loadSnapshot)
   const [apiStatus, setApiStatus] = useState<{ state: 'demo' | 'loading' | 'connected' | 'error'; message?: string }>(
     () => ({ state: apiBaseUrl ? 'loading' : 'demo' }),
   )
@@ -196,15 +193,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         if (!active) return
 
         const [partners, countries, sheets, categories] = results
-        setData({
-          partners: partners.status === 'fulfilled' ? partners.value.data.map(mapPartner) : [],
-          countries: countries.status === 'fulfilled'
-            ? countries.value.data.map(mapCountry)
-            : initialSnapshot.countries,
-          teamSheets: sheets.status === 'fulfilled' ? sheets.value.data.map(mapTeamSheet) : [],
-          categories: categories.status === 'fulfilled' ? categories.value.data : [],
-          activity: [],
-        })
+        setData((current) => ({
+          partners: partners.status === 'fulfilled' ? partners.value.data.map(mapPartner) : current.partners,
+          countries: countries.status === 'fulfilled' ? countries.value.data.map(mapCountry) : current.countries,
+          teamSheets: sheets.status === 'fulfilled' ? sheets.value.data.map(mapTeamSheet) : current.teamSheets,
+          categories: categories.status === 'fulfilled' ? categories.value.data : current.categories,
+          activity: current.activity,
+        }))
         setApiStatus(results.some((result) => result.status === 'rejected')
           ? { state: 'error', message: 'Certaines données du serveur sont indisponibles.' }
           : { state: 'connected' })
@@ -225,7 +220,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (apiBaseUrl) return
     try {
       localStorage.setItem(DATA_KEY, JSON.stringify(data))
     } catch {

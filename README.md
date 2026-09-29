@@ -32,8 +32,8 @@ Les routes sont séparées par rôle : `/partners/login` mène à `/partners`, t
 
 Sans `VITE_API_BASE_URL`, le frontend fonctionne en aperçu local :
 
-- Partenaire : clé d’accès `AniekPartner2024!`.
-- Administrateur : `admin@aniek.com` / `AniekAdmin2024!`.
+- Partenaire : configurez `VITE_PARTNER_PASSWORD` dans `frontend/.env.local`.
+- Administrateur : configurez `VITE_ADMIN_EMAIL` et `VITE_ADMIN_PASSWORD` dans `frontend/.env.local`.
 
 Ces identifiants d’aperçu ne protègent pas les comptes et ne doivent pas être déployés. Les modifications restent dans le navigateur. Le backend Laravel actuel utilise une clé partenaire partagée, sans compte email partenaire.
 
