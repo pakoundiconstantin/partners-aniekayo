@@ -1,0 +1,30 @@
+.country-portals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 8px 0 12px;
+}
+
+.country-portal {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  justify-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+}
+
+.country-portal img {
+  width: min(100%, 140px);
+  height: 72px;
+  object-fit: contain;
+}
+
+.country-portal span {
+  font-size: 12px;
+  font-weight: 600;
+}
