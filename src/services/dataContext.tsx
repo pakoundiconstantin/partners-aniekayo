@@ -89,10 +89,10 @@ function mapCountry(country: ApiCountry): AppSnapshot['countries'][number] {
     flag: legacy?.flag ?? '',
     registration: legacy?.registration ?? '',
     taxNumber: legacy?.taxNumber ?? '',
-    phone: office?.phone_standard || legacy?.phone || '',
-    email: office?.email_primary || legacy?.email || '',
-    address: office?.address || legacy?.address || '',
-    director: office?.director_name || legacy?.director || '',
+    phone: office?.phone_standard ?? legacy?.phone ?? '',
+    email: office?.email_primary ?? legacy?.email ?? '',
+    address: office?.address ?? legacy?.address ?? '',
+    director: office?.director_name ?? legacy?.director ?? '',
     backendId: country.id,
     agencyName: office?.agency_name ?? '',
     city: office?.city ?? '',
@@ -226,6 +226,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       // Keep the current session usable when a browser storage quota is reached.
     }
   }, [data])
+
+  useEffect(() => {
+    function handleStorage(event: StorageEvent) {
+      if (event.key !== DATA_KEY && event.key !== null) return
+      try {
+        const stored = event.newValue ? JSON.parse(event.newValue) as Partial<AppSnapshot> : {}
+        setData({ ...initialSnapshot, ...stored })
+      } catch {
+        setData(initialSnapshot)
+      }
+    }
+
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
 
   return <DataContext.Provider value={{ data, update: setData, apiStatus, refreshAdmin }}>{children}</DataContext.Provider>
 }

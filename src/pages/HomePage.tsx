@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome'
+import { useAppData } from '../services/dataStore'
+import type { Country, CountryPortal } from '../types/domain'
 import './HomePage.css'
 
 const countryNav = [
   { id: 'togo', label: 'Togo', flag: '/media/legacy/togo.png' },
   { id: 'mali', label: 'Mali', flag: '/media/legacy/drapoMali.png' },
   { id: 'cote-d-ivoire', label: 'Côte d’Ivoire', flag: '/media/legacy/CI.png' },
-  { id: 'brukina-faso', label: 'Burkina Faso', flag: '/media/legacy/burkina-faso.jpg' },
+  { id: 'burkina-faso', label: 'Burkina Faso', flag: '/media/legacy/burkina-faso.jpg' },
   { id: 'niger', label: 'Niger', flag: '/media/legacy/niger.jpg' },
 ] as const
 
@@ -151,7 +153,7 @@ const countryDetails: Record<string, CountryDetail> = {
     reminders: [],
     address: '',
   },
-  'brukina-faso': {
+  'burkina-faso': {
     title: 'BURKINA-FASO',
     rows: [
       { label: 'Numéro commercial', value: '22 20 29 64' },
@@ -186,75 +188,60 @@ const mainCompanies = [
   { href: 'https://', image: '/media/legacy/Neyla.jpg', alt: 'Neyla' },
 ]
 
+function portalsForCountry(country: Country): CountryPortal[] {
+  if (country.portals?.length) return country.portals
+
+  const navigationCountry = countryNav.find((item) => item.id === country.id)
+  const legacyTitle = country.id === 'burkina-faso'
+    ? 'BURKINA-FASO'
+    : navigationCountry?.label.toLocaleUpperCase('fr')
+
+  return overviewCountries.find((item) => item.title === legacyTitle)?.links.map((link) => ({
+    name: link.alt,
+    website: link.href,
+    image: link.image,
+  })) ?? []
+}
+
 export function HomePage() {
+  const { data } = useAppData()
   const { hash } = useLocation()
   const requestedCountry = hash.slice(1)
-  const initialCountry = countryNav.some((country) => country.id === requestedCountry) ? requestedCountry : 'overview'
+  const orderedCountries = countryNav.flatMap((navigationCountry) => {
+    const country = data.countries.find((item) => item.id === navigationCountry.id)
+    return country ? [country] : []
+  })
+  const initialCountry = orderedCountries.some((country) => country.id === requestedCountry) ? requestedCountry : 'overview'
   const [activeCountry, setActiveCountry] = useState(initialCountry)
+  const countryNavigation = orderedCountries.map((country) => ({
+    id: country.id,
+    label: country.name,
+    flag: country.flag ? `/media/flags/${country.flag}` : countryNav.find((item) => item.id === country.id)?.flag ?? '',
+  }))
 
   return (
     <>
       <SiteHeader
-        countryNavigation={countryNav}
+        countryNavigation={countryNavigation}
         activeCountry={activeCountry}
         onCountrySelect={setActiveCountry}
       />
       <main className="public-page">
         <section className="country" style={{ display: activeCountry === 'overview' ? 'block' : 'none' }}>
-          <h2>TOGO</h2>
-          <div className="companies">
-            {overviewCountries[0].links.map((link, index) => (
-              <div className="company" key={`${link.alt}-${index}`}>
-                <a href={link.href} target="_blank" rel="noreferrer">
-                  <img src={link.image} alt={link.alt} title={`Accéder au portail ${link.alt}`} />
-                </a>
+          {orderedCountries.map((country) => (
+            <div key={country.id}>
+              <h2>{country.name}</h2>
+              <div className="companies">
+                {portalsForCountry(country).map((portal, index) => (
+                  <div className="company" key={`${portal.website}|${portal.image}|${index}`}>
+                    <a href={portal.website || undefined} target={portal.website ? '_blank' : undefined} rel="noreferrer">
+                      <img src={portal.image} alt={portal.name} title={`Accéder au portail ${portal.name}`} />
+                    </a>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          <h2>MALI</h2>
-          <div className="companies">
-            {overviewCountries[1].links.map((link, index) => (
-              <div className="company" key={`${link.alt}-${index}`}>
-                <a href={link.href} target="_blank" rel="noreferrer">
-                  <img src={link.image} alt={link.alt} title={`Accéder au portail ${link.alt}`} />
-                </a>
-              </div>
-            ))}
-          </div>
-
-          <h2>CÔTE D’IVOIRE</h2>
-          <div className="companies">
-            {overviewCountries[2].links.map((link, index) => (
-              <div className="company" key={`${link.alt}-${index}`}>
-                <a href={link.href} target="_blank" rel="noreferrer">
-                  <img src={link.image} alt={link.alt} title={`Accéder au portail ${link.alt}`} />
-                </a>
-              </div>
-            ))}
-          </div>
-
-          <h2>BURKINA-FASO</h2>
-          <div className="companies">
-            {overviewCountries[3].links.map((link, index) => (
-              <div className="company" key={`${link.alt}-${index}`}>
-                <a href={link.href} target="_blank" rel="noreferrer">
-                  <img src={link.image} alt={link.alt} title={`Accéder au portail ${link.alt}`} />
-                </a>
-              </div>
-            ))}
-          </div>
-
-          <h2>NIGER</h2>
-          <div className="companies">
-            {overviewCountries[4].links.map((link, index) => (
-              <div className="company" key={`${link.alt}-${index}`}>
-                <a href={link.href} target="_blank" rel="noreferrer">
-                  <img src={link.image} alt={link.alt} title={`Accéder au portail ${link.alt}`} />
-                </a>
-              </div>
-            ))}
-          </div>
+            </div>
+          ))}
 
           <h2>ANIEK - KEINA Group - BAT Company</h2>
           <div className="services">
@@ -266,19 +253,34 @@ export function HomePage() {
           </div>
         </section>
 
-        {countryNav.map((country) => {
+        {orderedCountries.map((country) => {
           const detail = countryDetails[country.id as keyof typeof countryDetails]
-          if (!detail) return null
+          const portals = portalsForCountry(country)
+          const rows: ContactRow[] = [
+            { label: 'Agence', value: country.agencyName ?? '' },
+            { label: 'Registre de commerce', value: country.registration },
+            { label: 'Immatriculation fiscale', value: country.taxNumber },
+            { label: 'Téléphone standard', value: country.phone, href: country.phone ? `tel:${country.phone.replace(/[\s().-]/g, '')}` : undefined },
+            { label: 'Téléphone d’urgence', value: country.phoneEmergency ?? '', href: country.phoneEmergency ? `tel:${country.phoneEmergency.replace(/[\s().-]/g, '')}` : undefined },
+            { label: 'E-mail', value: country.email, href: country.email ? `mailto:${country.email}` : undefined },
+            { label: 'E-mail secondaire', value: country.emailSecondary ?? '', href: country.emailSecondary ? `mailto:${country.emailSecondary}` : undefined },
+            { label: 'Responsable', value: country.director },
+            { label: 'Fonction', value: country.directorTitle ?? '' },
+            { label: 'Ville', value: country.city ?? '' },
+            { label: 'Code postal', value: country.postalCode ?? '' },
+            { label: 'Devise', value: country.currency ?? '' },
+            { label: 'Horaires', value: country.openingHours ?? '' },
+          ].filter((row) => row.value)
 
           return (
             <section key={country.id} className="country" style={{ display: activeCountry === country.id ? 'block' : 'none' }}>
-              <h2>{detail.title}</h2>
+              <h2>{country.name}</h2>
 
               <div className="companies">
-                {(overviewCountries.find((entry) => entry.title === detail.title)?.links ?? []).map((link, index) => (
-                  <div className="company" key={`${link.alt}-${index}`}>
-                    <a href={link.href} target="_blank" rel="noreferrer">
-                      <img src={link.image} alt={link.alt} title={`Accéder au portail ${link.alt}`} />
+                {portals.map((portal, index) => (
+                  <div className="company" key={`${portal.website}|${portal.image}|${index}`}>
+                    <a href={portal.website || undefined} target={portal.website ? '_blank' : undefined} rel="noreferrer">
+                      <img src={portal.image} alt={portal.name} title={`Accéder au portail ${portal.name}`} />
                     </a>
                   </div>
                 ))}
@@ -290,7 +292,7 @@ export function HomePage() {
                     <tr>
                       <th colSpan={2}>Nos informations</th>
                     </tr>
-                    {detail.rows.map((row) => (
+                    {rows.map((row) => (
                       <tr key={row.label}>
                         <td data-label={row.label}>{row.label}</td>
                         <td>
@@ -301,13 +303,13 @@ export function HomePage() {
                   </tbody>
                 </table>
 
-                {detail.reminders.length > 0 && (
+                {(detail?.reminders.length ?? 0) > 0 && (
                   <table className="country-contact-table reminder-table">
                     <tbody>
                       <tr>
                         <th colSpan={2}>Rappels mensuels</th>
                       </tr>
-                      {detail.reminders.map((row) => (
+                      {detail?.reminders.map((row) => (
                         <tr key={row.label}>
                           <td data-label={row.label}>{row.label}</td>
                           <td>{row.value}</td>
@@ -323,10 +325,10 @@ export function HomePage() {
                 )}
               </div>
 
-              {detail.address && (
+              {country.address && (
                 <div className="address-strip" aria-label="Adresses">
-                  <strong>Adresse de livraison :</strong>
-                  <span>{detail.address}</span>
+                  <strong>Adresse de la filiale :</strong>
+                  <span>{country.address}</span>
                 </div>
               )}
             </section>

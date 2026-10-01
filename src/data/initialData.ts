@@ -11,10 +11,17 @@ export const categoryLabels: Record<PartnerCategory, string> = {
 }
 
 export function categoryFromSlug(slug = ''): PartnerCategory {
-  if (slug.includes('moteur') || slug.includes('pieces-pl')) return 'automobile'
-  if (slug.includes('outillage')) return 'outillage'
-  if (slug.includes('electricite')) return 'informatique'
-  if (slug.includes('entites')) return 'autre'
+  const normalized = slug
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('fr')
+
+  if (normalized.includes('automobile') || normalized.includes('moteur') || normalized.includes('pieces-pl')) return 'automobile'
+  if (normalized.includes('outillage')) return 'outillage'
+  if (normalized.includes('informatique') || normalized.includes('electricite')) return 'informatique'
+  if (normalized.includes('logistique')) return 'logistique'
+  if (normalized.includes('autre') || normalized.includes('entites')) return 'autre'
+  if (normalized.includes('industrie')) return 'industrie'
   return 'industrie'
 }
 
