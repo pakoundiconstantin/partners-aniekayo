@@ -1,6 +1,6 @@
 import { apiRequest } from './apiClient'
 import { authService } from './authService'
-import type { Country, Partner, TeamSheet } from '../types/domain'
+import type { Country, HomepageContent, Partner, TeamSheet } from '../types/domain'
 
 function token(): string {
   const value = authService.getSession()?.token
@@ -24,8 +24,11 @@ export async function savePartner(partner: Partner, logo?: File): Promise<void> 
   const fields = {
     name: partner.name,
     category_id: categoryId,
+    description: partner.description ?? '',
     website_url: partner.website || null,
     is_active: partner.active,
+    is_featured: partner.featured ?? false,
+    country_codes: partner.countryCodes ?? [],
   }
 
   if (isExisting) {
@@ -41,8 +44,11 @@ export async function savePartner(partner: Partner, logo?: File): Promise<void> 
   const body = new FormData()
   body.append('name', fields.name)
   body.append('category_id', String(fields.category_id))
+  body.append('description', fields.description)
   body.append('website_url', fields.website_url ?? '')
   body.append('is_active', fields.is_active ? '1' : '0')
+  body.append('is_featured', fields.is_featured ? '1' : '0')
+  fields.country_codes.forEach((code, index) => body.append(`country_codes[${index}]`, code))
   if (logo) body.append('logo', logo)
   await apiRequest('/admin/partners', { method: 'POST', body, token: credentials })
 }
@@ -78,4 +84,18 @@ export async function replaceTeamSheetImage(sheet: TeamSheet, file: File): Promi
   const body = new FormData()
   body.append('image', file)
   await apiRequest(`/admin/team-sheets/${sheet.id}/replace-image`, { method: 'POST', body, token: token() })
+}
+
+export async function getHomepageContent(): Promise<HomepageContent> {
+  const response = await apiRequest<{ data: HomepageContent }>('/homepage-content')
+  return response.data
+}
+
+export async function saveHomepageContent(content: HomepageContent): Promise<HomepageContent> {
+  const response = await apiRequest<{ data: HomepageContent }>('/admin/homepage-content', {
+    method: 'PUT',
+    body: { content },
+    token: token(),
+  })
+  return response.data
 }

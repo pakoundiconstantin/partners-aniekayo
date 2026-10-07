@@ -1,352 +1,207 @@
-import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { ArrowDown, ArrowRight, ArrowUpRight, Building2, Factory, HardHat, Mail, MapPin, Phone, Wrench } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { homepageContentStorageKey, initialHomepageContent } from '../data/homepageDefaults'
+import { NormalizedLogo } from '../components/NormalizedLogo'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome'
+import { initialSnapshot } from '../data/initialData'
+import { getHomepageContent } from '../services/adminApi'
+import { apiBaseUrl } from '../services/apiClient'
 import { useAppData } from '../services/dataStore'
-import type { Country, CountryPortal } from '../types/domain'
+import type { Country } from '../types/domain'
 import './HomePage.css'
 
-const countryNav = [
-  { id: 'togo', label: 'Togo', flag: '/media/legacy/togo.png' },
-  { id: 'mali', label: 'Mali', flag: '/media/legacy/drapoMali.png' },
-  { id: 'cote-d-ivoire', label: 'Côte d’Ivoire', flag: '/media/legacy/CI.png' },
-  { id: 'burkina-faso', label: 'Burkina Faso', flag: '/media/legacy/burkina-faso.jpg' },
-  { id: 'niger', label: 'Niger', flag: '/media/legacy/niger.jpg' },
-] as const
+const countryOrder = ['togo', 'mali', 'cote-d-ivoire', 'burkina-faso', 'niger']
 
-const overviewCountries = [
-  {
-    title: 'TOGO',
-    links: [
-      { href: 'https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3', image: '/media/legacy/img1.png', alt: 'OTR DIMANA' },
-      { href: 'https://gudef.otr.tg/', image: '/media/legacy/gudef.jpg', alt: 'OTR GUDEF' },
-      { href: 'https://passe.arcop.tg/publics/lite-egp', image: '/media/legacy/arcop.jpg', alt: 'ARCOP' },
-      { href: 'https://services.cnss.tg/services/login', image: '/media/legacy/cnss.png', alt: 'CNSS' },
-      { href: 'https://www.cfetogo.tg/portail_cfe.html', image: '/media/legacy/cfe.png', alt: 'CFE' },
-      { href: 'https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3', image: '/media/legacy/img1.png', alt: 'OTR DIMANA' },
-      { href: 'https://www.odoo.com/fr_FR/my/databases', image: '/media/legacy/odoo.jpg', alt: 'odoo' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-    ],
-  },
-  {
-    title: 'MALI',
-    links: [
-      { href: 'https://www.dgi.gouv.ml/', image: '/media/legacy/dgi_mali.jpeg', alt: 'DGI Mali' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.dgi.gouv.ml/', image: '/media/legacy/cmss.png', alt: 'cmss' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.dgi.gouv.ml/', image: '/media/legacy/dgi_mali.jpeg', alt: 'DGI Mali' },
-      { href: 'https://www.odoo.com/fr_FR/my/databases', image: '/media/legacy/odoo.jpg', alt: 'odoo' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-    ],
-  },
-  {
-    title: 'CÔTE D’IVOIRE',
-    links: [
-      { href: 'https://e-impots.gouv.ci/', image: '/media/legacy/e-impots.png', alt: 'DGI' },
-      { href: 'https://www.services.fne.dgi.gouv.ci/fr/login', image: '/media/legacy/fne.png', alt: 'FNE' },
-      { href: 'https://e.cnps.ci/', image: '/media/legacy/cnss.ci.png', alt: 'CNSS' },
-      { href: 'https://e-impots.gouv.ci/', image: '/media/legacy/e-impots.png', alt: 'DGI' },
-      { href: 'https://www.services.fne.dgi.gouv.ci/fr/login', image: '/media/legacy/fne.png', alt: 'FNE' },
-      { href: 'https://e.cnps.ci/', image: '/media/legacy/cnss.ci.png', alt: 'CNSS' },
-      { href: 'https://www.odoo.com/fr_FR/my/databases', image: '/media/legacy/odoo.jpg', alt: 'odoo' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-    ],
-  },
-  {
-    title: 'BURKINA-FASO',
-    links: [
-      { href: 'https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3', image: '/media/legacy/img1.png', alt: 'OTR DIMANA' },
-      { href: 'https://gudef.otr.tg/', image: '/media/legacy/gudef.jpg', alt: 'OTR GUDEF' },
-      { href: 'https://passe.arcop.tg/publics/lite-egp', image: '/media/legacy/arcop.jpg', alt: 'ARCOP' },
-      { href: 'https://services.cnss.tg/services/login', image: '/media/legacy/cnss.png', alt: 'CNSS' },
-      { href: 'https://www.cfetogo.tg/portail_cfe.html', image: '/media/legacy/cfe.png', alt: 'CFE' },
-      { href: 'https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3', image: '/media/legacy/img1.png', alt: 'OTR DIMANA' },
-      { href: 'https://www.odoo.com/fr_FR/my/databases', image: '/media/legacy/odoo.jpg', alt: 'odoo' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-    ],
-  },
-  {
-    title: 'NIGER',
-    links: [
-      { href: 'https://www.dgi.gouv.ml/', image: '/media/legacy/dgi_mali.jpeg', alt: 'DGI Mali' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.mde.ne/', image: '/media/legacy/logome.png', alt: 'mde' },
-      { href: 'https://cciniger.org/', image: '/media/legacy/logoccin.jpg', alt: 'ccin' },
-      { href: 'https://www.developmentaid.org/organizations/view/410648/cnpg-centre-national-de-perfectionnement-a-la-gestion', image: '/media/legacy/logodev.svg', alt: 'dev' },
-      { href: 'https://www.odoo.com/fr_FR/my/databases', image: '/media/legacy/odoo.jpg', alt: 'odoo' },
-      { href: 'https://niger.eregulations.org/', image: '/media/legacy/logoeregulation.png', alt: 'eregulation' },
-      { href: 'http://www.cman.ne', image: '/media/legacy/cman.webp', alt: 'cman' },
-      { href: 'https://www.anipex.org/', image: '/media/legacy/anipex_logo.png', alt: 'anipex' },
-      { href: 'https://www.armp-niger.org/', image: '/media/legacy/armp-logo.jpg', alt: 'armp' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-      { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'GMS' },
-    ],
-  },
-]
-
-type ContactRow = {
-  label: string
-  value: string
-  href?: string
+function countryFromLocation(search: string, hash: string): string {
+  const requestedCountry = new URLSearchParams(search).get('pays') ?? hash.slice(1)
+  return countryOrder.includes(requestedCountry) ? requestedCountry : countryOrder[0]
 }
 
-type CountryDetail = {
-  title: string
-  rows: ContactRow[]
-  reminders: ContactRow[]
-  address: string
+const countryFlags: Record<string, string> = {
+  togo: 'togo.png',
+  mali: 'drapoMali.png',
+  'cote-d-ivoire': 'CI.png',
+  'burkina-faso': 'burkina-faso.jpg',
+  niger: 'niger.jpg',
 }
 
-const countryDetails: Record<string, CountryDetail> = {
-  togo: {
-    title: 'TOGO',
-    rows: [
-      { label: 'Régistre de commerce', value: 'TG-LFW-01-2023-B12-00015' },
-      { label: 'Immatriculation fiscale', value: '1001331977' },
-      { label: 'Téléphone standard', value: '70 59 67 44' },
-      { label: 'Boîte postale', value: '01BP 3903' },
-      { label: 'E-mail', value: 'info@aniekgroup.com', href: 'mailto:info@aniekgroup.com' },
-    ],
-    reminders: [
-      { label: 'Prévisions', value: 'Le 1er / mois' },
-      { label: 'Préparer les salaires', value: 'Le 27 / mois' },
-      { label: 'Déclaration CNSS', value: 'Le 5 / mois' },
-      { label: 'Déclaration TVA OTR', value: 'Le 10 / mois' },
-      { label: 'Rapprochement des écritures', value: 'Le 30 ou 31 / mois' },
-    ],
-    address: '42 All. des Acacias, 78250 Meulan-en-Yvelines, France | Kalkoven 291820 Melsbroek, Belgique',
-  },
-  mali: {
-    title: 'MALI',
-    rows: [
-      { label: 'Numéro commercial', value: '+223 73 25 09 43' },
-      { label: 'Immatriculation fiscale', value: '085152418R' },
-      { label: 'E-mail', value: 'ml.keina@keinagroup.com', href: 'mailto:ml.keina@keinagroup.com' },
-    ],
-    reminders: [],
-    address: '',
-  },
-  'cote-d-ivoire': {
-    title: 'CÔTE D’IVOIRE',
-    rows: [
-      { label: 'Numéro commercial', value: '+225 07 57 71 71 11' },
-      { label: 'Immatriculation fiscale', value: '2242815N' },
-      { label: 'E-mail', value: 'ci.keina@keinagroup.com', href: 'mailto:ci.keina@keinagroup.com' },
-    ],
-    reminders: [],
-    address: '',
-  },
-  'burkina-faso': {
-    title: 'BURKINA-FASO',
-    rows: [
-      { label: 'Numéro commercial', value: '22 20 29 64' },
-      { label: 'Immatriculation fiscale', value: '1001331977' },
-      { label: 'Téléphone standard', value: '70 59 67 44' },
-      { label: 'Boîte postale', value: '01BP 3903' },
-      { label: 'E-mail', value: 'info@aniekgroup.com', href: 'mailto:info@aniekgroup.com' },
-    ],
-    reminders: [],
-    address: '',
-  },
-  niger: {
-    title: 'NIGER',
-    rows: [
-      { label: 'Numéro commercial', value: '22 20 29 64' },
-      { label: 'Immatriculation fiscale', value: '1001331977' },
-      { label: 'Téléphone standard', value: '70 59 67 44' },
-      { label: 'Boîte postale', value: '01BP 3903' },
-      { label: 'E-mail', value: 'info@aniekgroup.com', href: 'mailto:info@aniekgroup.com' },
-    ],
-    reminders: [],
-    address: '',
-  },
-}
+const expertiseIcons = { Factory, HardHat, Wrench, Building2 }
 
-const mainCompanies = [
-  { href: 'https://www.aniekgroup.com/', image: '/media/legacy/ANIEKGROUP.webp', alt: 'ANIEKGROUP' },
-  { href: 'https://www.aptint.com/fr', image: '/media/legacy/apt.jpeg', alt: 'APT' },
-  { href: 'https://kbsconstruct.com/', image: '/media/legacy/kbsc.jpg', alt: 'KBSC' },
-  { href: 'https://www.keinagroup.com/', image: '/media/legacy/keinagroup.jpeg', alt: 'keinagroup' },
-  { href: 'https://', image: '/media/legacy/anuba.jpg', alt: 'ANUBA' },
-  { href: 'https://', image: '/media/legacy/Neyla.jpg', alt: 'Neyla' },
-]
+function CountryCard({ country, index, tabId }: { country: Country; index: number; tabId: string }) {
+  const flag = country.flag || countryFlags[country.id]
+  const location = [country.city, country.address]
+    .filter(Boolean)
+    .join(' · ')
+    .replace(/(?:\s*\|\s*){2,}/g, ' | ')
 
-function portalsForCountry(country: Country): CountryPortal[] {
-  if (country.portals?.length) return country.portals
-
-  const navigationCountry = countryNav.find((item) => item.id === country.id)
-  const legacyTitle = country.id === 'burkina-faso'
-    ? 'BURKINA-FASO'
-    : navigationCountry?.label.toLocaleUpperCase('fr')
-
-  return overviewCountries.find((item) => item.title === legacyTitle)?.links.map((link) => ({
-    name: link.alt,
-    website: link.href,
-    image: link.image,
-  })) ?? []
+  return (
+    <article className="home-country home-country--selected" id={country.id} role="tabpanel" aria-labelledby={tabId}>
+      <div className="home-country__identity">
+        <div className="home-country__heading">
+          <img src={`/media/flags/${flag}`} alt="" />
+          <div>
+            <span className="home-country__index">0{index + 1} / 05</span>
+            <h3>{country.name}</h3>
+          </div>
+        </div>
+        {country.agencyName && <p className="home-country__agency">{country.agencyName}</p>}
+      </div>
+      <div className="home-country__contacts">
+        {location && <p className="home-country__detail"><MapPin size={16} aria-hidden="true" /><span><small>ADRESSE</small>{location}</span></p>}
+        {country.commercialNumber && country.phone && country.commercialNumber !== country.phone && <p className="home-country__detail"><Phone size={16} aria-hidden="true" /><span><small>NUMÉRO COMMERCIAL</small><a href={`tel:${country.commercialNumber.replace(/[\s().-]/g, '')}`}>{country.commercialNumber}</a></span></p>}
+        {country.phone && <p className="home-country__detail"><Phone size={16} aria-hidden="true" /><span><small>{country.phoneLabel?.toLocaleUpperCase('fr') ?? 'TÉLÉPHONE'}</small><a href={`tel:${country.phone.replace(/[\s().-]/g, '')}`}>{country.phone}</a></span></p>}
+        {country.email && <p className="home-country__detail"><Mail size={16} aria-hidden="true" /><span><small>E-MAIL</small><a href={`mailto:${country.email}`}>{country.email}</a></span></p>}
+        {!location && !country.phone && !country.email && <p className="home-country__empty">Coordonnées à venir</p>}
+      </div>
+      <div className="home-country__legal">
+        {country.registration && <p><small>REGISTRE DE COMMERCE</small><span>{country.registration}</span></p>}
+        {country.taxNumber && <p><small>IMMATRICULATION FISCALE</small><span>{country.taxNumber}</span></p>}
+        {country.postOfficeBox && <p><small>BOÎTE POSTALE</small><span>{country.postOfficeBox}</span></p>}
+      </div>
+      {!!country.monthlyReminders?.length && (
+        <section className="home-country__reminders" aria-label="Rappels mensuels">
+          <h4>Rappels mensuels</h4>
+          <dl>{country.monthlyReminders.map((reminder) => <div key={reminder.label}><dt>{reminder.label}</dt><dd>{reminder.value}</dd></div>)}</dl>
+          {country.reminderNote && <p>{country.reminderNote}</p>}
+        </section>
+      )}
+      {!!country.portals?.length && (
+        <section className="home-country__portals" aria-label={`Portails et services pour ${country.name}`}>
+          <div className="home-country__portals-heading"><div><small>RESSOURCES LOCALES</small><h4>Portails et services</h4></div><span>{country.portals.length} liens</span></div>
+          <div className="home-country__portal-grid">
+            {country.portals.map((portal) => (
+              <article className="home-portal-card" key={`${portal.website}|${portal.image}`}>
+                <a className="home-portal-card__image" href={portal.website || undefined} target={portal.website ? '_blank' : undefined} rel={portal.website ? 'noreferrer' : undefined} aria-label={`Ouvrir ${portal.name}`}>
+                  <NormalizedLogo source={portal.image} name={portal.name} />
+                </a>
+                <p>{portal.name}</p>
+                {portal.website ? <a className="home-portal-card__link" href={portal.website} target="_blank" rel="noreferrer">Ouvrir le site <ArrowUpRight size={14} aria-hidden="true" /></a> : <span className="home-portal-card__unavailable">Lien indisponible</span>}
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+    </article>
+  )
 }
 
 export function HomePage() {
   const { data } = useAppData()
-  const { hash } = useLocation()
-  const requestedCountry = hash.slice(1)
-  const orderedCountries = countryNav.flatMap((navigationCountry) => {
-    const country = data.countries.find((item) => item.id === navigationCountry.id)
+  const [homepage, setHomepage] = useState(() => {
+    if (apiBaseUrl) return initialHomepageContent
+    try {
+      return JSON.parse(localStorage.getItem(homepageContentStorageKey) ?? 'null') as typeof initialHomepageContent | null ?? initialHomepageContent
+    } catch {
+      return initialHomepageContent
+    }
+  })
+  const location = useLocation()
+  const navigate = useNavigate()
+  const countries = countryOrder.flatMap((id) => {
+    const country = data.countries.find((item) => item.id === id)
+      ?? initialSnapshot.countries.find((item) => item.id === id)
     return country ? [country] : []
   })
-  const initialCountry = orderedCountries.some((country) => country.id === requestedCountry) ? requestedCountry : 'overview'
-  const [activeCountry, setActiveCountry] = useState(initialCountry)
-  const countryNavigation = orderedCountries.map((country) => ({
+  const activeCountryId = countryFromLocation(location.search, location.hash)
+  const activeCountry = countries.find((country) => country.id === activeCountryId) ?? countries[0]
+  const countryNavigation = countries.map((country) => ({
     id: country.id,
     label: country.name,
-    flag: country.flag ? `/media/flags/${country.flag}` : countryNav.find((item) => item.id === country.id)?.flag ?? '',
+    flag: `/media/flags/${country.flag || countryFlags[country.id]}`,
   }))
+
+  useEffect(() => {
+    if (!apiBaseUrl) return
+    let active = true
+    void getHomepageContent().then((content) => {
+      if (active) setHomepage(content)
+    }).catch(() => undefined)
+    return () => { active = false }
+  }, [])
+
+  function showCountry(countryId: string) {
+    navigate({ pathname: '/', search: `?pays=${encodeURIComponent(countryId)}`, hash: '#implantations' }, { preventScrollReset: true })
+    document.getElementById('implantations')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <>
-      <SiteHeader
-        countryNavigation={countryNavigation}
-        activeCountry={activeCountry}
-        onCountrySelect={setActiveCountry}
-      />
-      <main className="public-page">
-        <section className="country" style={{ display: activeCountry === 'overview' ? 'block' : 'none' }}>
-          {orderedCountries.map((country) => (
-            <div key={country.id}>
-              <h2>{country.name}</h2>
-              <div className="companies">
-                {portalsForCountry(country).map((portal, index) => (
-                  <div className="company" key={`${portal.website}|${portal.image}|${index}`}>
-                    <a href={portal.website || undefined} target={portal.website ? '_blank' : undefined} rel="noreferrer">
-                      <img src={portal.image} alt={portal.name} title={`Accéder au portail ${portal.name}`} />
-                    </a>
-                  </div>
-                ))}
+      <SiteHeader countryNavigation={countryNavigation} activeCountry={activeCountryId} onCountrySelect={showCountry} />
+      <main className="home-page">
+        <section className="home-hero" aria-labelledby="home-title">
+          <div className="home-hero__inner">
+            <div className="home-hero__copy">
+              <p className="home-eyebrow"><span /> {homepage.hero.eyebrow}</p>
+              <h1 id="home-title">{homepage.hero.title} <em>{homepage.hero.highlight}</em></h1>
+              <p className="home-hero__intro">{homepage.hero.description}</p>
+              <div className="home-hero__actions">
+                <a className="home-button home-button--primary" href="#expertises">Découvrir nos métiers <ArrowRight size={17} aria-hidden="true" /></a>
+                <a className="home-button home-button--text" href="#implantations">Nos implantations <ArrowDown size={16} aria-hidden="true" /></a>
               </div>
+              <div className="home-hero__proof"><strong>5</strong><span>pays d’implantation<br />en Afrique de l’Ouest</span><span className="home-hero__proof-line" /><span>Togo · Mali · Côte d’Ivoire<br />Burkina Faso · Niger</span></div>
             </div>
-          ))}
+            <figure className="home-hero__photo">
+              <img src={homepage.hero.image} alt={homepage.hero.title} fetchPriority="high" />
+              <figcaption><span>MAINTENANCE INDUSTRIELLE</span></figcaption>
+            </figure>
+          </div>
+          <a className="home-scroll-cue" href="#expertises" aria-label="Défiler vers nos métiers"><span /> DÉFILER POUR DÉCOUVRIR</a>
+        </section>
 
-          <h2>ANIEK - KEINA Group - BAT Company</h2>
-          <div className="services">
-            {mainCompanies.map((company, index) => (
-              <div className="service" key={`${company.alt}-${index}`}>
-                <img src={company.image} alt={company.alt} />
-              </div>
+        <section className="home-expertise" id="expertises" aria-labelledby="expertise-title">
+          <div className="home-section-heading">
+            <div><p className="home-eyebrow home-eyebrow--dark">{homepage.expertise.eyebrow}</p><h2 id="expertise-title">{homepage.expertise.title}</h2></div>
+            <p>{homepage.expertise.description}</p>
+          </div>
+          <div className="home-expertise-grid">
+            {homepage.expertise.items.map(({ title, description, icon }, index) => {
+              const Icon = expertiseIcons[icon] ?? Building2
+              return (
+              <article className="home-expertise-item" key={title}>
+                <span className="home-expertise-item__number">0{index + 1}</span>
+                <Icon size={25} strokeWidth={1.6} aria-hidden="true" />
+                <h3>{title}</h3>
+                <p>{description}</p>
+              </article>
+              )
+            })}
+          </div>
+        </section>
+
+        <section className="home-presence" id="implantations" aria-labelledby="presence-title">
+          <div className="home-section-heading home-section-heading--presence">
+            <div><p className="home-eyebrow home-eyebrow--dark">{homepage.presence.eyebrow}</p><h2 id="presence-title">{homepage.presence.title}</h2></div>
+            <p>{homepage.presence.description}</p>
+          </div>
+          <div className="home-country-tabs" role="tablist" aria-label="Choisir un pays">
+            {countries.map((country, index) => (
+              <button key={country.id} type="button" role="tab" id={`country-tab-${country.id}`} aria-controls={country.id} aria-selected={activeCountryId === country.id} className={activeCountryId === country.id ? 'is-active' : ''} onClick={() => showCountry(country.id)}>
+                <img src={`/media/flags/${country.flag || countryFlags[country.id]}`} alt="" />
+                <span>{country.name}</span>
+                <small>0{index + 1}</small>
+              </button>
+            ))}
+          </div>
+          {activeCountry && <CountryCard country={activeCountry} index={countryOrder.indexOf(activeCountry.id)} tabId={`country-tab-${activeCountry.id}`} />}
+        </section>
+
+        <section className="home-companies" aria-labelledby="companies-title">
+          <div className="home-companies__intro"><p className="home-eyebrow home-eyebrow--dark">{homepage.companies.eyebrow}</p><h2 id="companies-title">{homepage.companies.title}</h2></div>
+          <div className="home-companies__grid">
+            {homepage.companies.items.map((company) => (
+              company.href
+                ? <a className="home-company-logo" href={company.href} target="_blank" rel="noreferrer" key={company.name} aria-label={`Visiter le site de ${company.name}`}><img src={company.image} alt={company.name} /></a>
+                : <div className="home-company-logo" key={company.name}><img src={company.image} alt={company.name} /></div>
             ))}
           </div>
         </section>
 
-        {orderedCountries.map((country) => {
-          const detail = countryDetails[country.id as keyof typeof countryDetails]
-          const portals = portalsForCountry(country)
-          const rows: ContactRow[] = [
-            { label: 'Agence', value: country.agencyName ?? '' },
-            { label: 'Registre de commerce', value: country.registration },
-            { label: 'Immatriculation fiscale', value: country.taxNumber },
-            { label: 'Téléphone standard', value: country.phone, href: country.phone ? `tel:${country.phone.replace(/[\s().-]/g, '')}` : undefined },
-            { label: 'Téléphone d’urgence', value: country.phoneEmergency ?? '', href: country.phoneEmergency ? `tel:${country.phoneEmergency.replace(/[\s().-]/g, '')}` : undefined },
-            { label: 'E-mail', value: country.email, href: country.email ? `mailto:${country.email}` : undefined },
-            { label: 'E-mail secondaire', value: country.emailSecondary ?? '', href: country.emailSecondary ? `mailto:${country.emailSecondary}` : undefined },
-            { label: 'Responsable', value: country.director },
-            { label: 'Fonction', value: country.directorTitle ?? '' },
-            { label: 'Ville', value: country.city ?? '' },
-            { label: 'Code postal', value: country.postalCode ?? '' },
-            { label: 'Devise', value: country.currency ?? '' },
-            { label: 'Horaires', value: country.openingHours ?? '' },
-          ].filter((row) => row.value)
-
-          return (
-            <section key={country.id} className="country" style={{ display: activeCountry === country.id ? 'block' : 'none' }}>
-              <h2>{country.name}</h2>
-
-              <div className="companies">
-                {portals.map((portal, index) => (
-                  <div className="company" key={`${portal.website}|${portal.image}|${index}`}>
-                    <a href={portal.website || undefined} target={portal.website ? '_blank' : undefined} rel="noreferrer">
-                      <img src={portal.image} alt={portal.name} title={`Accéder au portail ${portal.name}`} />
-                    </a>
-                  </div>
-                ))}
-              </div>
-
-              <div className="country-table-grid">
-                <table className="country-contact-table">
-                  <tbody>
-                    <tr>
-                      <th colSpan={2}>Nos informations</th>
-                    </tr>
-                    {rows.map((row) => (
-                      <tr key={row.label}>
-                        <td data-label={row.label}>{row.label}</td>
-                        <td>
-                          {row.href ? <a href={row.href}>{row.value}</a> : row.value}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {(detail?.reminders.length ?? 0) > 0 && (
-                  <table className="country-contact-table reminder-table">
-                    <tbody>
-                      <tr>
-                        <th colSpan={2}>Rappels mensuels</th>
-                      </tr>
-                      {detail?.reminders.map((row) => (
-                        <tr key={row.label}>
-                          <td data-label={row.label}>{row.label}</td>
-                          <td>{row.value}</td>
-                        </tr>
-                      ))}
-                      <tr>
-                        <td colSpan={2} className="forecast-note">
-                          * Prévision : Frais administratifs pour les dossiers d'appels d'offres, fournitures (cartouches, papier et tous les indispensables).
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                )}
-              </div>
-
-              {country.address && (
-                <div className="address-strip" aria-label="Adresses">
-                  <strong>Adresse de la filiale :</strong>
-                  <span>{country.address}</span>
-                </div>
-              )}
-            </section>
-          )
-        })}
-
-        <section className="enterprise-page">
-          <h2>NOS COMPAGNIES</h2>
-          <div className="services">
-            {mainCompanies.map((company, index) => (
-              <div className="service" key={`${company.alt}-${index}`}>
-                <a href={company.href} target="_blank" rel="noreferrer">
-                  <img src={company.image} alt={company.alt} />
-                </a>
-              </div>
-            ))}
-          </div>
+        <section className="home-partner-callout" id="partenaires">
+          <div><p className="home-eyebrow">{homepage.partnerCallout.eyebrow}</p><h2>{homepage.partnerCallout.title}</h2><p>{homepage.partnerCallout.description}</p></div>
+          <Link className="home-button home-button--light" to={homepage.partnerCallout.href}>{homepage.partnerCallout.buttonLabel} <ArrowRight size={17} aria-hidden="true" /></Link>
         </section>
+
       </main>
       <SiteFooter />
     </>

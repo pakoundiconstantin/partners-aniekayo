@@ -19,7 +19,11 @@ interface ApiPartner {
   website_url: string | null
   logo_path: string | null
   is_active: boolean
+  is_featured?: boolean
+  description?: string | null
+  updated_at?: string
   category?: { name?: string; slug?: string }
+  countries?: Array<{ code_iso: string; name?: string }>
 }
 
 interface ApiCountry {
@@ -74,6 +78,10 @@ function mapPartner(partner: ApiPartner): AppSnapshot['partners'][number] {
     logo: apiMediaUrl(partner.logo_path) || logoFallback,
     website: partner.website_url ?? '',
     active: partner.is_active,
+    featured: partner.is_featured === true,
+    description: partner.description ?? undefined,
+    updatedAt: partner.updated_at ?? undefined,
+    countryCodes: partner.countries?.map((country) => country.code_iso) ?? [],
   }
 }
 
@@ -85,6 +93,7 @@ function mapCountry(country: ApiCountry): AppSnapshot['countries'][number] {
   return {
     ...legacy,
     id: legacyId,
+    isoCode: countryCode,
     name: country.name,
     flag: legacy?.flag ?? '',
     registration: legacy?.registration ?? '',
@@ -130,10 +139,43 @@ function mapAuditLog(entry: ApiAuditLog): AppSnapshot['activity'][number] {
   }
 }
 
+function mergeSnapshot(snapshot: Partial<AppSnapshot>): AppSnapshot {
+  const storedCountries = Array.isArray(snapshot.countries) ? snapshot.countries : []
+  const countries = initialSnapshot.countries.map((country) => {
+    const savedCountry = storedCountries.find((item) => item.id === country.id)
+    if (!savedCountry) return country
+
+    return {
+      ...country,
+      ...savedCountry,
+      registration: savedCountry.registration || country.registration,
+      taxNumber: savedCountry.taxNumber || country.taxNumber,
+      phone: savedCountry.phone || country.phone,
+      phoneLabel: country.phoneLabel,
+      commercialNumber: country.commercialNumber,
+      email: savedCountry.email || country.email,
+      address: savedCountry.address || country.address,
+      postOfficeBox: savedCountry.postOfficeBox || country.postOfficeBox,
+      monthlyReminders: country.monthlyReminders,
+      reminderNote: country.reminderNote,
+      portals: savedCountry.portals?.length ? savedCountry.portals : country.portals ?? [],
+    }
+  })
+
+  return {
+    ...initialSnapshot,
+    ...snapshot,
+    countries: [
+      ...countries,
+      ...storedCountries.filter((country) => !initialSnapshot.countries.some((initialCountry) => initialCountry.id === country.id)),
+    ],
+  }
+}
+
 function loadSnapshot(): AppSnapshot {
   try {
     const stored = localStorage.getItem(DATA_KEY)
-    return stored ? { ...initialSnapshot, ...JSON.parse(stored) as Partial<AppSnapshot> } : initialSnapshot
+    return stored ? mergeSnapshot(JSON.parse(stored) as Partial<AppSnapshot>) : initialSnapshot
   } catch {
     return initialSnapshot
   }
@@ -200,7 +242,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           categories: categories.status === 'fulfilled' ? categories.value.data : current.categories,
           activity: current.activity,
         }))
-        setApiStatus(results.some((result) => result.status === 'rejected')
+        setApiStatus(results.some((result) => result.status === 'rejected') || (partners.status === 'fulfilled' && partners.value.data.length === 0)
           ? { state: 'error', message: 'Certaines données du serveur sont indisponibles.' }
           : { state: 'connected' })
       } catch {
@@ -232,7 +274,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       if (event.key !== DATA_KEY && event.key !== null) return
       try {
         const stored = event.newValue ? JSON.parse(event.newValue) as Partial<AppSnapshot> : {}
-        setData({ ...initialSnapshot, ...stored })
+        setData(mergeSnapshot(stored))
       } catch {
         setData(initialSnapshot)
       }

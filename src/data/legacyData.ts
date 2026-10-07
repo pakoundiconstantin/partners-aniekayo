@@ -11,7 +11,7 @@ const sections = [
 
 const document = new DOMParser().parseFromString(legacyHtml, 'text/html')
 
-function text(element: Element | null): string {
+function text(element: Element | null | undefined): string {
   return element?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
 }
 
@@ -44,13 +44,28 @@ function portalsFor(section: Element): CountryPortal[] {
 function countryFromHtml(config: (typeof sections)[number]): Country {
   const section = document.querySelector(`section#${config.sectionId}`)
   const infoTable = section?.querySelector('.country-contact-table')
-  const rows = [...(infoTable?.querySelectorAll('tr') ?? [])].map((row) => {
+  const rowsFor = (table: Element | null | undefined) => [...(table?.querySelectorAll('tr') ?? [])].map((row) => {
     const cells = row.querySelectorAll('td')
     return [normalize(text(cells.item(0))), text(cells.item(1))] as const
   })
+  const sourceRows = [...(infoTable?.querySelectorAll('tr') ?? [])].map((row) => {
+    const cells = row.querySelectorAll('td')
+    return [text(cells.item(0)), text(cells.item(1))] as const
+  })
+  const rows = rowsFor(infoTable)
   const valueFor = (label: string) => rows.find(([name]) => name.includes(label))?.[1] ?? ''
+  const phoneStandard = sourceRows.find(([label]) => normalize(label).includes('telephone'))
+  const commercialEntry = sourceRows.find(([label]) => normalize(label).includes('commercial'))
+  const postOfficeBox = valueFor('boite postale') || valueFor('bp')
+  const reminderTable = section?.querySelector('.reminder-table')
+  const monthlyReminders = [...(reminderTable?.querySelectorAll('tr') ?? [])].flatMap((row) => {
+    const cells = row.querySelectorAll('td')
+    const label = text(cells.item(0))
+    const value = text(cells.item(1))
+    return label && value ? [{ label, value }] : []
+  })
   const addressStrip = section?.querySelector('.address-strip')
-  const deliveryAddresses = [...(addressStrip?.querySelectorAll('span') ?? [])]
+  const deliveryAddresses = [...(addressStrip?.querySelectorAll('span:not(.address-separator)') ?? [])]
     .map(text)
     .filter(Boolean)
     .join(' | ')
@@ -61,10 +76,15 @@ function countryFromHtml(config: (typeof sections)[number]): Country {
     flag: config.flag,
     registration: valueFor('registre'),
     taxNumber: valueFor('fiscale'),
-    phone: valueFor('telephone') || valueFor('commercial'),
+    phone: phoneStandard?.[1] || commercialEntry?.[1] || '',
+    phoneLabel: phoneStandard?.[0] || commercialEntry?.[0],
+    commercialNumber: commercialEntry?.[1],
     email: rows.find(([label]) => label.includes('e-mail'))?.[1] ?? '',
-    address: deliveryAddresses || valueFor('bp'),
+    address: deliveryAddresses,
     director: '',
+    postOfficeBox,
+    monthlyReminders,
+    reminderNote: text(section?.querySelector('.forecast-note')),
     portals: section ? portalsFor(section) : [],
   }
 }

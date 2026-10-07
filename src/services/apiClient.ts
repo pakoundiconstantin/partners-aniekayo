@@ -25,9 +25,14 @@ async function ensureCsrfCookie(): Promise<void> {
       headers: { Accept: 'application/json' },
       credentials: 'include',
     }).then((response) => {
-      if (!response.ok) throw new Error('Impossible d’initialiser la session sécurisée.')
+      if (!response.ok) {
+        throw new Error(`Laravel répond (HTTP ${response.status}), mais l’initialisation de la session a échoué. Vérifiez la configuration de la base de données et des sessions.`)
+      }
     }).catch((error: unknown) => {
       csrfCookieRequest = undefined
+      if (error instanceof TypeError) {
+        throw new Error('Le serveur Laravel est injoignable depuis le navigateur. Vérifiez qu’il est démarré et que CORS autorise l’origine du frontend.')
+      }
       throw error
     })
   }
@@ -47,17 +52,22 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   if (changesState) await ensureCsrfCookie()
 
   const isFormData = body instanceof FormData
-  const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
-    method,
-    headers: {
-      Accept: 'application/json',
-      ...(changesState && readXsrfCookie() ? { 'X-XSRF-TOKEN': readXsrfCookie() } : {}),
-      ...(body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    credentials: changesState || usesPartnerSession ? 'include' : 'omit',
-    body: body ? isFormData ? body : JSON.stringify(body) : undefined,
-  })
+  let response: Response
+  try {
+    response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
+      method,
+      headers: {
+        Accept: 'application/json',
+        ...(changesState && readXsrfCookie() ? { 'X-XSRF-TOKEN': readXsrfCookie() } : {}),
+        ...(body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      credentials: changesState || usesPartnerSession ? 'include' : 'omit',
+      body: body ? isFormData ? body : JSON.stringify(body) : undefined,
+    })
+  } catch {
+    throw new Error('Impossible de joindre l’API Laravel. Vérifiez que le serveur est démarré et que CORS autorise le frontend.')
+  }
   const payload: unknown = await response.json().catch(() => ({}))
 
   if (!response.ok) {
@@ -79,5 +89,8 @@ export function apiMediaUrl(path?: string | null): string {
   if (!path) return ''
   if (/^https?:\/\//i.test(path)) return path
   const normalizedPath = path.replace(/^\/?(?:storage\/)?/, '')
+  if (normalizedPath.startsWith('media/partners/')) {
+    return apiBaseUrl ? `${apiBaseUrl}/${normalizedPath}` : `/${normalizedPath}`
+  }
   return apiBaseUrl ? `${apiBaseUrl}/storage/${normalizedPath}` : `/media/${normalizedPath}`
 }

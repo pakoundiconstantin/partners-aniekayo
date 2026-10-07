@@ -4,14 +4,13 @@ import { useAppData } from '../services/dataStore'
 type CountryNavItem = { id: string; label: string; flag: string }
 
 type SiteHeaderProps = {
-  partnerArea?: boolean
   showCountryFlags?: boolean
   countryNavigation?: readonly CountryNavItem[]
   activeCountry?: string
   onCountrySelect?: (id: string) => void
 }
 
-export function SiteHeader({ partnerArea = false, showCountryFlags = true, countryNavigation, activeCountry, onCountrySelect }: SiteHeaderProps) {
+export function SiteHeader({ showCountryFlags = true, countryNavigation, activeCountry, onCountrySelect }: SiteHeaderProps) {
   const { data } = useAppData()
   const countries = countryNavigation ?? data.countries.map((country) => ({
     id: country.id,
@@ -21,11 +20,10 @@ export function SiteHeader({ partnerArea = false, showCountryFlags = true, count
 
   return (
     <header className="site-header">
-      <Link to="/" className="brand" aria-label="ANIEK Group Services, accueil"><img src="/media/partners/ANIEKGROUP.webp" alt="ANIEK Group Services" /></Link>
+      <Link to="/" className="brand" aria-label="ANIEK Group Services, accueil"><span className="brand-wordmark"><strong>ANIEK</strong><span>GROUP SERVICES</span></span></Link>
       <nav className="main-nav" aria-label="Navigation principale">
         <NavLink to="/" end>Accueil</NavLink>
-        <Link to={partnerArea ? '/partners' : '/partners/login'}>{partnerArea ? 'Espace partenaires' : 'Partenaires'}</Link>
-        <Link to="/admin/login" className="admin-entry" aria-label="Administration">Administration</Link>
+        <NavLink to="/partners">Partenaires</NavLink>
         {showCountryFlags && (
           <div className="flag-nav" aria-label="Choisir un pays">
             {countries.map((country) => (

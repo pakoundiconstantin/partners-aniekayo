@@ -42,7 +42,7 @@ function LoginRoute({ role }: { role: AuthSession['role'] }) {
   const { session, signIn } = useAuth()
   const navigate = useNavigate()
 
-  if (session) return <Navigate to={session.role === 'admin' ? '/admin' : '/partners'} replace />
+  if (session?.role === role) return <Navigate to={role === 'admin' ? '/admin' : '/partners'} replace />
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>, email: string, password: string) {
     event.preventDefault()
@@ -62,7 +62,7 @@ function ProtectedRoute({ role, children }: { role: AuthSession['role']; childre
 }
 
 function AppRoutes() {
-  const { session, signOut } = useAuth()
+  const { session } = useAuth()
 
   useEffect(() => {
     function useHistoricalImage(event: Event) {
@@ -91,8 +91,8 @@ function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/partners/login" element={<LoginRoute role="partner" />} />
       <Route path="/admin/login" element={<LoginRoute role="admin" />} />
-      <Route path="/partners" element={<ProtectedRoute role="partner"><PartnersPage onSignOut={signOut} /></ProtectedRoute>} />
-      <Route path="/admin/*" element={<ProtectedRoute role="admin"><AdminPage email={session?.email ?? ''} onSignOut={signOut} /></ProtectedRoute>} />
+      <Route path="/partners" element={<PartnersPage />} />
+      <Route path="/admin/*" element={<ProtectedRoute role="admin"><AdminPage email={session?.email ?? ''} /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
