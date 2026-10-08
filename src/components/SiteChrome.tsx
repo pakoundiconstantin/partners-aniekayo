@@ -20,7 +20,7 @@ export function SiteHeader({ showCountryFlags = true, countryNavigation, activeC
 
   return (
     <header className="site-header">
-      <Link to="/" className="brand" aria-label="ANIEK Group Services, accueil"><span className="brand-wordmark"><strong>ANIEK</strong><span>GROUP SERVICES</span></span></Link>
+      <Link to="/" className="brand" aria-label="ANIEK & AYO Group Services, accueil"><img src="/media/partners/ANIEKGROUP.webp" alt="ANIEK & AYO" /></Link>
       <nav className="main-nav" aria-label="Navigation principale">
         <NavLink to="/" end>Accueil</NavLink>
         <NavLink to="/partners">Partenaires</NavLink>

@@ -9,6 +9,7 @@ import { getHomepageContent } from '../services/adminApi'
 import { apiBaseUrl } from '../services/apiClient'
 import { useAppData } from '../services/dataStore'
 import type { Country } from '../types/domain'
+import dgPortrait from '../../../backup/image/DG.jpg'
 import './HomePage.css'
 
 const countryOrder = ['togo', 'mali', 'cote-d-ivoire', 'burkina-faso', 'niger']
@@ -147,6 +148,20 @@ export function HomePage() {
             </figure>
           </div>
           <a className="home-scroll-cue" href="#expertises" aria-label="Défiler vers nos métiers"><span /> DÉFILER POUR DÉCOUVRIR</a>
+        </section>
+
+        <section className="home-director" aria-labelledby="director-title">
+          <div className="home-director__inner">
+            <div className="home-director__copy">
+              <p className="home-eyebrow home-eyebrow--dark">ANIEK &amp; AYO SARL</p>
+              <h2 id="director-title">Le Directeur Général</h2>
+              <p>Fondée en 2017, ANIEK &amp; AYO accompagne les entreprises d’Afrique de l’Ouest avec des solutions d’équipements industriels, d’ingénierie et de maintenance adaptées aux réalités du terrain.</p>
+            </div>
+            <figure className="home-director__portrait">
+              <img src={dgPortrait} alt="Portrait du Directeur Général d’ANIEK & AYO" loading="lazy" />
+              <figcaption>Directeur Général <span>ANIEK &amp; AYO SARL</span></figcaption>
+            </figure>
+          </div>
         </section>
 
         <section className="home-expertise" id="expertises" aria-labelledby="expertise-title">

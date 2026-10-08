@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
-import { Activity, ArrowLeft, ArrowUpRight, Building2, CheckCircle2, Clock3, FileImage, Globe, LayoutDashboard, Pencil, Plus, Save, Search, Trash2, Users, X } from 'lucide-react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Activity, ArrowUpRight, Building2, CheckCircle2, Clock3, FileImage, Globe, LayoutDashboard, LogOut, Pencil, Plus, Save, Search, Trash2, Users, X } from 'lucide-react'
 import { SiteHeader } from '../components/SiteChrome'
 import { HomepageContentEditor } from '../components/admin/HomepageContentEditor'
 import './AdminPage.css'
@@ -125,7 +125,7 @@ function AdminOverview({ partnerCount, partnerTotal, countryCount, sheetCount, l
     <div className="admin-overview">
       <header className="overview-intro">
         <div><p className="eyebrow">PILOTAGE DU PORTAIL</p><h1>Vue d’ensemble</h1><p>Suivez les contenus publiés et accédez directement aux principales actions de gestion.</p></div>
-        <div className="overview-header-actions"><Link className="overview-back-link" to="/partners"><ArrowLeft size={15} /> Retour aux partenaires</Link><div className={`overview-connection ${isConnected ? 'is-connected' : 'is-disconnected'}`}><span className="overview-connection-dot" />{isConnected ? 'Données synchronisées' : 'Synchronisation à vérifier'}</div></div>
+        <div className="overview-header-actions"><div className={`overview-connection ${isConnected ? 'is-connected' : 'is-disconnected'}`}><span className="overview-connection-dot" />{isConnected ? 'Données synchronisées' : 'Synchronisation à vérifier'}</div></div>
       </header>
 
       <section className="overview-metrics" aria-label="Indicateurs du portail">
@@ -150,8 +150,9 @@ function AdminOverview({ partnerCount, partnerTotal, countryCount, sheetCount, l
   )
 }
 
-export function AdminPage({ email }: { email: string }) {
+export function AdminPage({ email, onLogout }: { email: string; onLogout: () => Promise<void> }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const { data, update, apiStatus, refreshAdmin } = useAppData()
   const [editor, setEditor] = useState<Partner | null | undefined>(undefined)
   const [notice, setNotice] = useState('')
@@ -164,10 +165,20 @@ export function AdminPage({ email }: { email: string }) {
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr').includes(query))
   }, [data.partners, partnerQuery])
 
+  async function handleLogout() {
+    try {
+      await onLogout()
+    } catch {
+      setNotice('La session locale est fermée, mais la révocation sur le serveur a échoué.')
+    } finally {
+      navigate('/admin/login', { replace: true })
+    }
+  }
+
   useEffect(() => {
-    if (!apiBaseUrl || apiStatus.state === 'demo') return
+    if (!apiBaseUrl) return
     void refreshAdmin().catch((reason: unknown) => setNotice(reason instanceof Error ? reason.message : 'Chargement admin impossible.'))
-  }, [apiStatus.state, refreshAdmin])
+  }, [refreshAdmin])
 
   async function savePartner(partner: Partner, logo?: File) {
     const exists = data.partners.some((item) => item.id === partner.id)
@@ -224,7 +235,7 @@ export function AdminPage({ email }: { email: string }) {
     }
   }
 
-  return <><SiteHeader /><div className="admin-shell"><aside className="admin-sidebar"><div className="admin-identity"><span className="admin-avatar">{email.slice(0, 1).toUpperCase()}</span><span><strong>Administrateur</strong><small>{email}</small></span></div><nav aria-label="Administration">{views.map(({ id, label, icon: Icon }) => <NavLink key={id} to={id === 'dashboard' ? '/admin' : `/admin/${id}`} end={id === 'dashboard'} className={({ isActive }) => isActive ? 'admin-nav-link is-active' : 'admin-nav-link'}><Icon size={18} />{label}</NavLink>)}</nav></aside><main className="admin-content">{notice && <div className="notice-bar" role="status">{notice}<button type="button" className="icon-button" aria-label="Fermer le message" onClick={() => setNotice('')}><X size={16} /></button></div>}
+  return <><SiteHeader /><div className="admin-shell"><aside className="admin-sidebar"><div className="admin-identity"><span className="admin-avatar">{email.slice(0, 1).toUpperCase()}</span><span><strong>Administrateur</strong><small>{email}</small></span></div><nav aria-label="Administration">{views.map(({ id, label, icon: Icon }) => <NavLink key={id} to={id === 'dashboard' ? '/admin' : `/admin/${id}`} end={id === 'dashboard'} className={({ isActive }) => isActive ? 'admin-nav-link is-active' : 'admin-nav-link'}><Icon size={18} />{label}</NavLink>)}</nav><div className="admin-sidebar-footer"><button className="admin-signout" type="button" onClick={() => void handleLogout()}><LogOut size={16} />Déconnexion</button></div></aside><main className="admin-content">{notice && <div className="notice-bar" role="status">{notice}<button type="button" className="icon-button" aria-label="Fermer le message" onClick={() => setNotice('')}><X size={16} /></button></div>}
     {activeView === 'dashboard' && <AdminOverview partnerCount={activePartners} partnerTotal={data.partners.length} countryCount={data.countries.length} sheetCount={data.teamSheets.length} latestUpload={data.activity.find((entry) => entry.action === 'Remplacement de fiche') ? new Date(data.activity.find((entry) => entry.action === 'Remplacement de fiche')!.date).toLocaleDateString('fr-FR') : '—'} recentActivity={data.activity.slice(0, 4)} isConnected={apiStatus.state === 'connected'} />}
     {activeView === 'homepage' && <HomepageContentEditor onSaved={setNotice} />}
     {activeView === 'partners' && <>

@@ -13,6 +13,12 @@
 .partner-country-options>div { display:flex; flex-wrap:wrap; gap:8px; }
 .partner-country-options label { display:inline-flex; align-items:center; gap:6px; min-height:32px; padding:0 9px; border:1px solid #e4dddd; background:#fff; color:#514848; font-size:10px; font-weight:700; cursor:pointer; }
 .partner-country-options input { accent-color:var(--red); }
+.admin-sidebar-footer { margin-top:auto; padding-top:14px; border-top:1px solid var(--line); }
+.admin-signout { display:flex; align-items:center; gap:9px; width:100%; min-height:38px; padding:0 10px; border:1px solid transparent; border-radius:3px; background:transparent; color:#756a6a; text-align:left; font-size:11px; font-weight:700; cursor:pointer; transition:background .16s,color .16s,border-color .16s; }
+.admin-signout:hover { border-color:#f0dddd; background:#fff7f7; color:var(--red-deep); }
+.admin-signout:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
+@media (min-width:1001px) { .admin-shell .admin-sidebar { top:96px; height:calc(100vh - 96px); box-sizing:border-box; } }
+@media (min-width:681px) and (max-width:1000px) { .admin-shell .admin-sidebar { top:127px; height:calc(100vh - 127px); box-sizing:border-box; overflow:hidden; }.admin-shell .admin-sidebar nav { flex:1; min-height:0; overflow-y:auto; align-content:start; } }
 @media(max-width:700px) { .admin-table-toolbar { align-items:stretch; flex-direction:column; }.admin-table-toolbar .search-field { width:auto; }.partner-status-options { grid-template-columns:1fr; }.admin-table .table-partner { min-width:145px; } }
 .admin-overview { width:100%; max-width:1320px; margin:0 auto; }
 .overview-intro { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin:4px 0 28px; }

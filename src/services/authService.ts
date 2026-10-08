@@ -38,7 +38,11 @@ export const authService = {
       const value: unknown = JSON.parse(sessionStorage.getItem(SESSION_KEY) ?? 'null')
       if (typeof value === 'object' && value !== null && 'role' in value && 'email' in value) {
         const candidate = value as AuthSession
-        if ((candidate.role === 'partner' || candidate.role === 'admin') && typeof candidate.email === 'string') return candidate
+        if (candidate.role === 'partner') {
+          sessionStorage.removeItem(SESSION_KEY)
+          return null
+        }
+        if (candidate.role === 'admin' && typeof candidate.email === 'string') return candidate
       }
     } catch {
       sessionStorage.removeItem(SESSION_KEY)
@@ -72,20 +76,21 @@ export const authService = {
     }
 
     const session = { role, email: sessionEmail, ...(token ? { token } : {}) } satisfies AuthSession
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    if (role === 'admin') sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    else sessionStorage.removeItem(SESSION_KEY)
     return session
   },
 
   async logout(): Promise<void> {
     const session = this.getSession()
-    try {
-      if (apiBaseUrl && session?.role === 'admin' && session.token) {
-        await apiRequest('/auth/logout', { method: 'POST', token: session.token })
-      }
-    } catch {
-      // A local logout must still complete if the API cannot be reached.
-    } finally {
-      sessionStorage.removeItem(SESSION_KEY)
+    sessionStorage.removeItem(SESSION_KEY)
+
+    if (apiBaseUrl && session?.role === 'admin' && session.token) {
+      void apiRequest('/auth/logout', {
+        method: 'POST',
+        token: session.token,
+        signal: AbortSignal.timeout(10000),
+      }).catch(() => undefined)
     }
   },
 }

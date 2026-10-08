@@ -37,9 +37,7 @@ const normalize = (value: string) =>
 export function PartnersPage() {
   const { data, apiStatus } = useAppData();
   const displayedPartners =
-    apiStatus.state === "connected" || apiStatus.state === "loading"
-      ? data.partners
-      : fallbackPartners;
+    apiStatus.state === "demo" ? fallbackPartners : data.partners;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"all" | PartnerCategory>("all");
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -110,13 +108,13 @@ export function PartnersPage() {
             </div>
             <div className="strategic-section__meta">
               <ShieldCheck size={18} aria-hidden="true" />
-              <span>{featuredPartners.length} marque{featuredPartners.length > 1 ? "s" : ""} mise en avant</span>
+              <span>{featuredPartners.length} marque{featuredPartners.length > 1 ? "s" : ""} mise{featuredPartners.length > 1 ? "s" : ""} en avant</span>
             </div>
           </div>
 
           {featuredPartners.length ? (
             <div className="strategic-grid">
-              {featuredPartners.slice(0, 3).map((partner) => (
+              {featuredPartners.map((partner) => (
                 <article className="strategic-card" key={partner.id}>
                   <div className="strategic-card__logo">
                     {partner.logo ? (
@@ -188,7 +186,7 @@ export function PartnersPage() {
           <span>{activePartners.length} partenaires actifs</span>
         </div>
 
-        {isLoading ? (
+        {isLoading && !hasData ? (
           <div className="partner-state partner-state--loading" role="status">
             <LoaderCircle size={25} className="is-spin" aria-hidden="true" />
             <h2>Chargement du catalogue</h2>

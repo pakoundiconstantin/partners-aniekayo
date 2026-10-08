@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { SiteHeader } from '../components/SiteChrome'
+import { warmupCsrfCookie } from '../services/apiClient'
 import type { AuthSession } from '../services/authService'
 
 export function LoginPage({ role, onSubmit }: { role: AuthSession['role']; onSubmit: (event: FormEvent<HTMLFormElement>, email: string, password: string) => Promise<void> }) {
@@ -9,6 +10,10 @@ export function LoginPage({ role, onSubmit }: { role: AuthSession['role']; onSub
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const isAdmin = role === 'admin'
+
+  useEffect(() => {
+    warmupCsrfCookie()
+  }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

@@ -31,8 +31,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
-    await authService.logout()
-    setSession(null)
+    try {
+      await authService.logout()
+    } finally {
+      setSession(null)
+    }
   }
 
   return <AuthContext.Provider value={{ session, signIn, signOut }}>{children}</AuthContext.Provider>
@@ -62,7 +65,7 @@ function ProtectedRoute({ role, children }: { role: AuthSession['role']; childre
 }
 
 function AppRoutes() {
-  const { session } = useAuth()
+  const { session, signOut } = useAuth()
 
   useEffect(() => {
     function useHistoricalImage(event: Event) {
@@ -91,8 +94,8 @@ function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/partners/login" element={<LoginRoute role="partner" />} />
       <Route path="/admin/login" element={<LoginRoute role="admin" />} />
-      <Route path="/partners" element={<PartnersPage />} />
-      <Route path="/admin/*" element={<ProtectedRoute role="admin"><AdminPage email={session?.email ?? ''} /></ProtectedRoute>} />
+      <Route path="/partners" element={<ProtectedRoute role="partner"><PartnersPage /></ProtectedRoute>} />
+      <Route path="/admin/*" element={<ProtectedRoute role="admin"><AdminPage email={session?.email ?? ''} onLogout={signOut} /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

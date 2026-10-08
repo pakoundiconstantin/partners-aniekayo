@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useLocation } from 'react-router-dom'
 import { categoryFromSlug, initialSnapshot } from '../data/initialData'
 import type { AppSnapshot } from '../types/domain'
 import { DataContext } from './dataStore'
@@ -6,6 +7,7 @@ import { apiBaseUrl, apiMediaUrl, apiRequest } from './apiClient'
 import { authService } from './authService'
 
 const DATA_KEY = 'aniek.content.v1'
+const API_DATA_KEY = 'aniek.api-content.v1'
 const legacyCountryIds: Record<string, string> = { TG: 'togo', ML: 'mali', CI: 'cote-d-ivoire', BF: 'burkina-faso', NE: 'niger' }
 interface ApiEnvelope<T> {
   data: T
@@ -48,6 +50,7 @@ interface ApiCountry {
 
 interface ApiTeamSheet {
   id: number
+  page_number?: number
   title: string
   image_path: string | null
 }
@@ -115,10 +118,16 @@ function mapCountry(country: ApiCountry): AppSnapshot['countries'][number] {
 }
 
 function mapTeamSheet(sheet: ApiTeamSheet): AppSnapshot['teamSheets'][number] {
+  const pageNumber = sheet.page_number ?? sheet.id
+  const imagePath = sheet.image_path?.replace(/\\/g, '/')
+  const isBundledTeamSheet = imagePath ? /^team\/pages\/\d+\.webp$/i.test(imagePath) : false
+
   return {
     id: sheet.id,
     title: sheet.title,
-    image: apiMediaUrl(sheet.image_path) || `/media/team/${sheet.id}.webp`,
+    image: isBundledTeamSheet
+      ? `/media/team/${pageNumber}.webp`
+      : apiMediaUrl(imagePath) || `/media/team/${pageNumber}.webp`,
   }
 }
 
@@ -181,8 +190,28 @@ function loadSnapshot(): AppSnapshot {
   }
 }
 
+function loadApiSnapshot(): AppSnapshot {
+  try {
+    const stored = localStorage.getItem(API_DATA_KEY)
+    if (!stored) return initialSnapshot
+    const value: unknown = JSON.parse(stored)
+    if (typeof value !== 'object' || value === null) return initialSnapshot
+    const cached = value as Partial<AppSnapshot>
+    return mergeSnapshot({
+      partners: Array.isArray(cached.partners) ? cached.partners : [],
+      categories: Array.isArray(cached.categories) ? cached.categories : [],
+      countries: Array.isArray(cached.countries) ? cached.countries : [],
+      teamSheets: Array.isArray(cached.teamSheets) ? cached.teamSheets : [],
+      activity: [],
+    })
+  } catch {
+    return initialSnapshot
+  }
+}
+
 export function AppDataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState(loadSnapshot)
+  const { pathname } = useLocation()
+  const [data, setData] = useState(() => apiBaseUrl ? loadApiSnapshot() : loadSnapshot())
   const [apiStatus, setApiStatus] = useState<{ state: 'demo' | 'loading' | 'connected' | 'error'; message?: string }>(
     () => ({ state: apiBaseUrl ? 'loading' : 'demo' }),
   )
@@ -191,21 +220,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     const token = authService.getSession()?.token
     if (!apiBaseUrl || !token) return
     try {
-      const [partners, countries, sheets, categories, logs] = await Promise.all([
-        apiRequest<ApiEnvelope<{ data: ApiPartner[] }>>('/admin/partners?per_page=100', { token }),
-        apiRequest<ApiEnvelope<ApiCountry[]>>('/admin/countries', { token }),
-        apiRequest<ApiEnvelope<ApiTeamSheet[]>>('/admin/team-sheets', { token }),
-        apiRequest<ApiEnvelope<ApiCategory[]>>('/admin/partner-categories', { token }),
-        apiRequest<ApiEnvelope<{ data: ApiAuditLog[] }>>('/admin/audit-logs?per_page=100', { token }),
-      ])
-      setData((current) => ({
-        ...current,
-        partners: partners.data.data.map(mapPartner),
-        countries: countries.data.map(mapCountry),
-        teamSheets: sheets.data.map(mapTeamSheet),
-        categories: categories.data,
-        activity: logs.data.data.map(mapAuditLog),
-      }))
+      const requests = [
+        apiRequest<ApiEnvelope<{ data: ApiPartner[] }>>('/admin/partners?per_page=100', { token })
+          .then(({ data: result }) => setData((current) => ({ ...current, partners: result.data.map(mapPartner) }))),
+        apiRequest<ApiEnvelope<ApiCountry[]>>('/admin/countries', { token })
+          .then(({ data: result }) => setData((current) => ({ ...current, countries: result.map(mapCountry) }))),
+        apiRequest<ApiEnvelope<ApiTeamSheet[]>>('/admin/team-sheets', { token })
+          .then(({ data: result }) => setData((current) => ({ ...current, teamSheets: result.map(mapTeamSheet) }))),
+        apiRequest<ApiEnvelope<ApiCategory[]>>('/admin/partner-categories', { token })
+          .then(({ data: result }) => setData((current) => ({ ...current, categories: result }))),
+        apiRequest<ApiEnvelope<{ data: ApiAuditLog[] }>>('/admin/audit-logs?per_page=100', { token })
+          .then(({ data: result }) => setData((current) => ({ ...current, activity: result.data.map(mapAuditLog) }))),
+      ]
+      const results = await Promise.allSettled(requests)
+      const failedRequest = results.find((result) => result.status === 'rejected')
+      if (failedRequest?.status === 'rejected') throw failedRequest.reason
       setApiStatus({ state: 'connected' })
     } catch (reason) {
       setApiStatus({ state: 'error', message: reason instanceof Error ? reason.message : 'Chargement admin impossible.' })
@@ -214,8 +243,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (!apiBaseUrl) return
+    if (!apiBaseUrl || pathname === '/admin' || pathname.startsWith('/admin/') || pathname === '/partners/login' || pathname === '/admin/login') return
     let active = true
+    const controller = new AbortController()
     const timeoutId = window.setTimeout(() => {
       if (!active) return
       setData((current) => current.countries.length
@@ -226,25 +256,35 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     async function loadFromApi() {
       try {
-        const results = await Promise.allSettled([
-          apiRequest<ApiEnvelope<ApiPartner[]>>('/partners'),
-          apiRequest<ApiEnvelope<ApiCountry[]>>('/countries'),
-          apiRequest<ApiEnvelope<ApiTeamSheet[]>>('/team-sheets'),
-          apiRequest<ApiEnvelope<ApiCategory[]>>('/partners/categories'),
+        const partnersRequest = apiRequest<ApiEnvelope<ApiPartner[]>>('/partners', { signal: controller.signal })
+        const supportingRequests = Promise.allSettled([
+          apiRequest<ApiEnvelope<ApiCountry[]>>('/countries', { signal: controller.signal }),
+          apiRequest<ApiEnvelope<ApiTeamSheet[]>>('/team-sheets', { signal: controller.signal }),
+          apiRequest<ApiEnvelope<ApiCategory[]>>('/partners/categories', { signal: controller.signal }),
         ])
+        const [partners] = await Promise.allSettled([partnersRequest])
         if (!active) return
 
-        const [partners, countries, sheets, categories] = results
         setData((current) => ({
+          ...current,
           partners: partners.status === 'fulfilled' ? partners.value.data.map(mapPartner) : current.partners,
+        }))
+        setApiStatus(partners.status === 'fulfilled' && partners.value.data.length > 0
+          ? { state: 'connected' }
+          : { state: 'error', message: 'Certaines données du serveur sont indisponibles.' })
+        window.clearTimeout(timeoutId)
+
+        const [countries, sheets, categories] = await supportingRequests
+        if (!active) return
+        setData((current) => ({
+          ...current,
           countries: countries.status === 'fulfilled' ? countries.value.data.map(mapCountry) : current.countries,
           teamSheets: sheets.status === 'fulfilled' ? sheets.value.data.map(mapTeamSheet) : current.teamSheets,
           categories: categories.status === 'fulfilled' ? categories.value.data : current.categories,
-          activity: current.activity,
         }))
-        setApiStatus(results.some((result) => result.status === 'rejected') || (partners.status === 'fulfilled' && partners.value.data.length === 0)
-          ? { state: 'error', message: 'Certaines données du serveur sont indisponibles.' }
-          : { state: 'connected' })
+        if ([countries, sheets, categories].some((result) => result.status === 'rejected')) {
+          setApiStatus({ state: 'error', message: 'Certaines données du serveur sont indisponibles.' })
+        }
       } catch {
         if (!active) return
         setData((current) => ({ ...current, countries: initialSnapshot.countries }))
@@ -257,11 +297,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     void loadFromApi()
     return () => {
       active = false
+      controller.abort()
       window.clearTimeout(timeoutId)
     }
-  }, [])
+  }, [pathname])
 
   useEffect(() => {
+    if (apiBaseUrl) return
     try {
       localStorage.setItem(DATA_KEY, JSON.stringify(data))
     } catch {
@@ -270,6 +312,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [data])
 
   useEffect(() => {
+    if (!apiBaseUrl) return
+    try {
+      localStorage.setItem(API_DATA_KEY, JSON.stringify({
+        partners: data.partners,
+        categories: data.categories,
+        countries: data.countries,
+        teamSheets: data.teamSheets,
+      }))
+    } catch {
+      // Keep API-backed pages usable when browser storage is unavailable.
+    }
+  }, [data])
+
+  useEffect(() => {
+    if (apiBaseUrl) return
     function handleStorage(event: StorageEvent) {
       if (event.key !== DATA_KEY && event.key !== null) return
       try {

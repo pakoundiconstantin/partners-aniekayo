@@ -9,6 +9,7 @@ export interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   token?: string
+  signal?: AbortSignal
 }
 
 let csrfCookieRequest: Promise<void> | undefined
@@ -20,6 +21,7 @@ function readXsrfCookie(): string {
 
 async function ensureCsrfCookie(): Promise<void> {
   if (!apiBaseUrl) return
+  if (readXsrfCookie()) return
   if (!csrfCookieRequest) {
     csrfCookieRequest = fetch(`${apiBaseUrl}/sanctum/csrf-cookie`, {
       headers: { Accept: 'application/json' },
@@ -43,10 +45,14 @@ async function ensureCsrfCookie(): Promise<void> {
   }
 }
 
+export function warmupCsrfCookie(): void {
+  void ensureCsrfCookie().catch(() => undefined)
+}
+
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   if (!apiBaseUrl) throw new Error('L’URL de l’API n’est pas configurée.')
 
-  const { method = 'GET', body, token } = options
+  const { method = 'GET', body, token, signal } = options
   const changesState = method !== 'GET'
   const usesPartnerSession = path === '/partners/documents' || path.startsWith('/partners/documents/')
   if (changesState) await ensureCsrfCookie()
@@ -64,6 +70,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
       },
       credentials: changesState || usesPartnerSession ? 'include' : 'omit',
       body: body ? isFormData ? body : JSON.stringify(body) : undefined,
+      signal,
     })
   } catch {
     throw new Error('Impossible de joindre l’API Laravel. Vérifiez que le serveur est démarré et que CORS autorise le frontend.')

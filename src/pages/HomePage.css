@@ -456,7 +456,7 @@
   width: min(1240px, calc(100% - 48px));
   min-height: 570px;
   margin: 0 auto;
-  padding: 64px 0 76px;
+  padding: 38px 0 42px;
   box-sizing: border-box;
 }
 
@@ -778,12 +778,86 @@
   background: #b31420;
 }
 
+.home-director {
+  width: 100%;
+  padding: 36px max(24px, calc((100vw - 1240px) / 2));
+  border-bottom: 1px solid var(--home-line);
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.home-director__inner {
+  display: grid;
+  grid-template-columns: 420px 260px;
+  align-items: center;
+  gap: 20px;
+  width: min(700px, 100%);
+  margin: 0 auto;
+}
+
+.home-director__copy {
+  width: 100%;
+  max-width: 420px;
+}
+
+.home-director__copy .home-eyebrow {
+  margin-bottom: 12px;
+}
+
+.home-director__copy h2 {
+  margin: 0;
+  color: #302929;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.home-director__copy > p:last-child {
+  max-width: 100%;
+  margin: 16px 0 0;
+  color: var(--home-muted);
+  font-size: 14px;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.home-director__portrait {
+  width: min(100%, 260px);
+  aspect-ratio: 4 / 5;
+  justify-self: end;
+  margin: 0;
+}
+
+.home-director__portrait img {
+  display: block;
+  width: 100%;
+  height: calc(100% - 30px);
+  object-fit: cover;
+  object-position: 42% 24%;
+  background: #e8e3df;
+}
+
+.home-director__portrait figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  color: #302929;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.home-director__portrait figcaption span {
+  color: var(--home-muted);
+  font-weight: 600;
+}
+
 .home-expertise,
 .home-presence,
 .home-companies {
   width: min(1240px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 74px 0;
+  padding: 36px 0;
 }
 
 .home-section-heading {
@@ -871,7 +945,7 @@
 
 .home-presence {
   width: 100%;
-  padding: 72px max(24px, calc((100vw - 1240px) / 2)) 78px;
+  padding: 36px max(24px, calc((100vw - 1240px) / 2));
   box-sizing: border-box;
   background: #eee9e5;
 }
@@ -891,9 +965,9 @@
 
 .home-country-tabs {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   width: min(1240px, 100%);
-  margin: 0 auto 12px;
+  margin: 0 auto 9px;
   overflow-x: auto;
   scrollbar-color: #b8aaa5 transparent;
   scrollbar-width: thin;
@@ -905,8 +979,8 @@
   align-items: center;
   gap: 9px;
   min-width: 0;
-  min-height: 52px;
-  padding: 8px 12px;
+  min-height: 48px;
+  padding: 7px 10px;
   border: 1px solid #ded5d1;
   border-bottom: 2px solid #ded5d1;
   background: #fff;
@@ -1055,9 +1129,9 @@
   display: grid;
   grid-template-columns: minmax(190px, .8fr) minmax(0, 1.25fr) minmax(170px, .85fr);
   align-items: center;
-  gap: 28px;
-  min-height: 206px;
-  padding: 25px 28px;
+  gap: 14px;
+  min-height: 160px;
+  padding: 14px 16px;
   border-top-width: 4px;
   scroll-margin-top: 100px;
 }
@@ -1084,13 +1158,13 @@
 }
 
 .home-country--selected .home-country__agency {
-  margin-top: 14px;
+  margin-top: 10px;
   font-size: 11px;
 }
 
 .home-country__contacts {
   display: grid;
-  gap: 16px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -1123,9 +1197,9 @@
 
 .home-country__legal {
   display: grid;
-  gap: 15px;
+  gap: 8px;
   min-width: 0;
-  padding-left: 24px;
+  padding-left: 12px;
   border-left: 1px solid #eee8e5;
 }
 
@@ -1143,7 +1217,7 @@
 .home-country__portals {
   grid-column: 1 / -1;
   min-width: 0;
-  padding-top: 20px;
+  padding-top: 10px;
   border-top: 1px solid #eee8e5;
 }
 
@@ -1157,13 +1231,13 @@
 .home-country__reminders dl {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-  margin: 12px 0 0;
+  gap: 5px;
+  margin: 7px 0 0;
 }
 
 .home-country__reminders dl > div {
   min-width: 0;
-  padding: 10px 12px;
+  padding: 6px 8px;
   border: 1px solid #eee8e5;
   background: #faf8f6;
 }
@@ -1192,8 +1266,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 13px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .home-country__portals-heading small {
@@ -1211,15 +1285,15 @@
 
 .home-country__portal-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 6px;
 }
 
 .home-portal-card {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 10px;
+  padding: 6px;
   border: 1px solid #e8e0dc;
   background: #fff;
   transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
@@ -1233,7 +1307,7 @@
 
 .home-portal-card__image {
   display: grid;
-  height: 100px;
+  height: 68px;
   place-items: center;
   overflow: hidden;
   background: #fff;
@@ -1241,10 +1315,10 @@
 
 .home-portal-card__image img {
   display: block;
-  width: 96px;
-  height: 96px;
+  width: 64px;
+  height: 64px;
   max-width: calc(100% - 12px);
-  max-height: 96px;
+  max-height: 64px;
   min-width: 0;
   min-height: 0;
   box-sizing: border-box;
@@ -1252,8 +1326,8 @@
 }
 
 .home-portal-card > p {
-  min-height: 31px;
-  margin: 8px 0 4px;
+  min-height: 27px;
+  margin: 6px 0 3px;
   color: #302929;
   font-size: 10px;
   font-weight: 800;
@@ -1286,8 +1360,8 @@
   grid-template-columns: minmax(220px, .8fr) minmax(0, 1.8fr);
   align-items: center;
   gap: 46px;
-  padding-top: 68px;
-  padding-bottom: 68px;
+  padding-top: 36px;
+  padding-bottom: 36px;
 }
 
 .home-companies__intro h2 {
@@ -1297,7 +1371,9 @@
 .home-companies__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: 96px;
+  grid-auto-rows: 76px;
+  width: min(100%, 720px);
+  justify-self: end;
   min-width: 0;
   border-top: 1px solid var(--home-line);
   border-left: 1px solid var(--home-line);
@@ -1310,7 +1386,7 @@
   min-height: 0;
   overflow: hidden;
   place-items: center;
-  padding: 12px;
+  padding: 8px;
   border-right: 1px solid var(--home-line);
   border-bottom: 1px solid var(--home-line);
   box-sizing: border-box;
@@ -1318,8 +1394,8 @@
 
 .home-company-logo img {
   display: block;
-  width: min(100%, 190px);
-  height: 58px;
+  width: min(100%, 155px);
+  height: 46px;
   max-height: 100%;
   object-fit: contain;
 }
@@ -1390,6 +1466,10 @@ a.home-company-logo:hover {
   .home-country-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .home-director__inner {
+    gap: 16px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1418,10 +1498,36 @@ a.home-company-logo:hover {
     display: none;
   }
 
+  .home-director {
+    padding: 28px 18px;
+  }
+
+  .home-director__inner {
+    grid-template-columns: 1fr;
+    grid-template-areas: "portrait" "copy";
+    gap: 16px;
+  }
+
+  .home-director__copy {
+    grid-area: copy;
+    width: min(100%, 560px);
+    justify-self: center;
+  }
+
+  .home-director__copy h2 {
+    font-size: 29px;
+  }
+
+  .home-director__portrait {
+    grid-area: portrait;
+    width: min(100%, 260px);
+    justify-self: center;
+  }
+
   .home-expertise,
   .home-companies {
     width: calc(100% - 36px);
-    padding: 52px 0;
+    padding: 28px 0;
   }
 
   .home-section-heading {
@@ -1448,7 +1554,7 @@ a.home-company-logo:hover {
   }
 
   .home-presence {
-    padding: 52px 18px 58px;
+    padding: 28px 18px 32px;
   }
 
   .home-country-grid {
@@ -1457,7 +1563,7 @@ a.home-company-logo:hover {
 
   .home-country--selected {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 21px;
+    gap: 14px;
   }
 
   .home-country__reminders dl {
@@ -1490,7 +1596,7 @@ a.home-company-logo:hover {
 @media (max-width: 460px) {
   .home-hero__inner {
     width: calc(100% - 30px);
-    padding-top: 38px;
+    padding-top: 26px;
   }
 
   .home-hero__copy h1 {
@@ -1552,8 +1658,8 @@ a.home-company-logo:hover {
 
   .home-country--selected {
     grid-template-columns: 1fr;
-    gap: 19px;
-    padding: 20px 17px;
+    gap: 12px;
+    padding: 14px 12px;
   }
 
   .home-country__reminders dl {
@@ -1574,11 +1680,11 @@ a.home-company-logo:hover {
 
   .home-companies__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: 86px;
+    grid-auto-rows: 70px;
   }
 
   .home-company-logo img {
-    height: 52px;
+    height: 42px;
   }
 
   .home-partner-callout {
