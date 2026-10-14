@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Check, Eye, LoaderCircle, Plus, Save, Trash2 } from 'lucide-react'
-import { homepageContentStorageKey, initialHomepageContent } from '../../data/homepageDefaults'
+import { AdminConfirmDialog } from './AdminConfirmDialog'
+import { homepageContentStorageKey, initialHomepageContent, normalizeHomepageContent } from '../../data/homepageDefaults'
 import type { ExpertiseIcon, HomepageContent } from '../../types/domain'
 import { apiBaseUrl } from '../../services/apiClient'
 import { getHomepageContent, saveHomepageContent } from '../../services/adminApi'
 import './HomepageContentEditor.css'
+
+type PendingHomepageDeletion =
+  | { kind: 'expertise'; index: number; name: string }
+  | { kind: 'company'; index: number; name: string }
 
 const iconOptions: Array<{ value: ExpertiseIcon; label: string }> = [
   { value: 'Factory', label: 'Industrie' },
@@ -19,6 +24,7 @@ export function HomepageContentEditor({ onSaved }: { onSaved: (message: string) 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [loadFailed, setLoadFailed] = useState(false)
+  const [pendingDeletion, setPendingDeletion] = useState<PendingHomepageDeletion | null>(null)
 
   useEffect(() => {
     let active = true
@@ -27,7 +33,7 @@ export function HomepageContentEditor({ onSaved }: { onSaved: (message: string) 
       try {
         const stored = apiBaseUrl
           ? await getHomepageContent()
-          : JSON.parse(localStorage.getItem(homepageContentStorageKey) ?? 'null') as HomepageContent | null
+          : normalizeHomepageContent(JSON.parse(localStorage.getItem(homepageContentStorageKey) ?? 'null'))
         if (active && stored) setContent(stored)
       } catch (reason) {
         if (active) {
@@ -103,11 +109,17 @@ export function HomepageContentEditor({ onSaved }: { onSaved: (message: string) 
     }))
   }
 
-  function removeExpertise(index: number) {
+  function applyExpertiseRemoval(index: number) {
     setContent((current) => ({
       ...current,
       expertise: { ...current.expertise, items: current.expertise.items.filter((_, itemIndex) => itemIndex !== index) },
     }))
+  }
+
+  function removeExpertise(index: number) {
+    const item = content.expertise.items[index]
+    if (!item) return
+    setPendingDeletion({ kind: 'expertise', index, name: item.title.trim() || `Métier ${index + 1}` })
   }
 
   function addCompany() {
@@ -118,11 +130,24 @@ export function HomepageContentEditor({ onSaved }: { onSaved: (message: string) 
     }))
   }
 
-  function removeCompany(index: number) {
+  function applyCompanyRemoval(index: number) {
     setContent((current) => ({
       ...current,
       companies: { ...current.companies, items: current.companies.items.filter((_, itemIndex) => itemIndex !== index) },
     }))
+  }
+
+  function removeCompany(index: number) {
+    const item = content.companies.items[index]
+    if (!item) return
+    setPendingDeletion({ kind: 'company', index, name: item.name.trim() || `Entreprise ${index + 1}` })
+  }
+
+  function confirmPendingDeletion() {
+    if (!pendingDeletion) return
+    if (pendingDeletion.kind === 'expertise') applyExpertiseRemoval(pendingDeletion.index)
+    else applyCompanyRemoval(pendingDeletion.index)
+    setPendingDeletion(null)
   }
 
   if (loading) return <div className="homepage-editor-loading"><LoaderCircle size={18} /> Chargement du contenu…</div>
@@ -179,6 +204,7 @@ export function HomepageContentEditor({ onSaved }: { onSaved: (message: string) 
 
       {error && <p className="form-error homepage-editor-error" role="alert">{error}</p>}
       <footer className="homepage-editor-footer"><span><Check size={15} /> Toute publication est enregistrée dans le journal d’activité.</span><button className="primary-button" type="button" onClick={() => void publish()} disabled={saving || loadFailed}><Save size={17} /> {saving ? 'Publication…' : loadFailed ? 'Contenu indisponible' : 'Publier les modifications'}</button></footer>
+      {pendingDeletion && <AdminConfirmDialog itemName={pendingDeletion.name} description={pendingDeletion.kind === 'expertise' ? 'Ce métier sera retiré du brouillon de la page d’accueil.' : 'Cette entreprise sera retirée du brouillon de la page d’accueil.'} onCancel={() => setPendingDeletion(null)} onConfirm={confirmPendingDeletion} />}
     </div>
   )
 }

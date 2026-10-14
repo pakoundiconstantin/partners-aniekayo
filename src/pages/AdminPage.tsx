@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Activity, ArrowUpRight, Building2, CheckCircle2, Clock3, FileImage, Globe, LayoutDashboard, LogOut, Pencil, Plus, Save, Search, Trash2, Users, X } from 'lucide-react'
+import { Activity, ArrowUpRight, Building2, CheckCircle2, Clock3, FileImage, LayoutDashboard, LogOut, Pencil, Plus, Save, Search, Trash2, Users, X } from 'lucide-react'
 import { SiteHeader } from '../components/SiteChrome'
-import { HomepageContentEditor } from '../components/admin/HomepageContentEditor'
+import { AdminConfirmDialog } from '../components/admin/AdminConfirmDialog'
 import './AdminPage.css'
 import { categoryFromSlug, categoryLabels } from '../data/initialData'
 import { deletePartner as deletePartnerApi, replaceTeamSheetImage, saveCountry as saveCountryApi, savePartner as savePartnerApi } from '../services/adminApi'
@@ -10,11 +10,10 @@ import { apiBaseUrl } from '../services/apiClient'
 import { useAppData } from '../services/dataStore'
 import type { ActivityEntry, Country, Partner, PartnerCategory, TeamSheet } from '../types/domain'
 
-type AdminView = 'dashboard' | 'homepage' | 'partners' | 'countries' | 'team' | 'activity'
+type AdminView = 'dashboard' | 'partners' | 'countries' | 'team' | 'activity'
 
 const views: Array<{ id: AdminView; label: string; icon: typeof LayoutDashboard }> = [
   { id: 'dashboard', label: 'Vue d’ensemble', icon: LayoutDashboard },
-  { id: 'homepage', label: 'Site vitrine', icon: Globe },
   { id: 'partners', label: 'Partenaires', icon: Users },
   { id: 'countries', label: 'Filiales', icon: Building2 },
   { id: 'team', label: 'Fiches d’équipe', icon: FileImage },
@@ -47,8 +46,14 @@ function PartnerEditor({ partner, onSave, onClose }: { partner: Partner | null; 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
-    if (!['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-      setError('Choisissez un logo PNG, JPG, WebP ou SVG de 2 Mo maximum.')
+    const validExtensions = /\.(png|jpe?g|webp|svg)$/i
+    const isImageMime = file.type.startsWith('image/') || file.type === ''
+    if ((!isImageMime && !validExtensions.test(file.name)) || (!validExtensions.test(file.name) && !['image/png', 'image/jpeg', 'image/jpg', 'image/pjpeg', 'image/webp', 'image/svg+xml'].includes(file.type.toLowerCase()))) {
+      setError('Choisissez une photo ou un logo au format PNG, JPG, WebP ou SVG.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La taille de la photo ne peut pas excéder 5 Mo.')
       return
     }
     try {
@@ -68,7 +73,7 @@ function PartnerEditor({ partner, onSave, onClose }: { partner: Partner | null; 
     const selectedCountries = form.getAll('countryCodes').map(String)
     if (!name) { setError('Le nom du partenaire est obligatoire.'); return }
     if (!category) { setError('Choisissez une catégorie.'); return }
-    if (!partner && !logoFile) { setError('Ajoutez un logo pour créer le partenaire.'); return }
+    if (!partner && !logoFile) { setError('Ajoutez un logo ou une photo pour créer le partenaire.'); return }
     if (data.partners.some((item) => item.id !== partner?.id && item.name.toLocaleLowerCase() === name.toLocaleLowerCase())) { setError('Ce partenaire existe déjà.'); return }
     setSaving(true)
     setError('')
@@ -103,8 +108,8 @@ function PartnerEditor({ partner, onSave, onClose }: { partner: Partner | null; 
           <label>Description<textarea name="description" defaultValue={partner?.description} rows={3} maxLength={2000} placeholder="Présentez l’expertise de ce partenaire." /></label>
           <label>Site web<input name="website" type="url" defaultValue={partner?.website} placeholder="https://" /></label>
           <fieldset className="partner-country-options"><legend>Pays de couverture</legend><div>{data.countries.map((country) => { const code = country.isoCode ?? countryCodes[country.id] ?? country.id.toUpperCase(); return <label key={country.id}><input type="checkbox" name="countryCodes" value={code} defaultChecked={partner?.countryCodes?.includes(code)} />{country.name}</label> })}</div></fieldset>
-          <label>Logo<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" required={!partner} onChange={(event) => void handleFile(event)} /></label>
-          {logo && <img className="logo-preview" src={logo} alt="Aperçu du logo" />}
+          <label>Logo / Photo<input type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,.png,.jpg,.jpeg,.webp,.svg,image/*" required={!partner} onChange={(event) => void handleFile(event)} /></label>
+          {logo && <img className="logo-preview" src={logo} alt="Aperçu du logo" onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.5' }} />}
           <div className="partner-status-options"><label className="checkbox-field"><input name="active" type="checkbox" defaultChecked={partner?.active ?? true} /> Partenaire actif</label><label className="checkbox-field"><input name="featured" type="checkbox" defaultChecked={partner?.featured ?? false} /> Mettre en avant</label></div>
           {error && <p className="form-error" role="alert">{error}</p>}
           <div className="form-actions"><button className="secondary-button" type="button" onClick={onClose}>Annuler</button><button className="primary-button" type="submit" disabled={saving}><Save size={16} /> {saving ? 'Enregistrement…' : 'Enregistrer'}</button></div>
@@ -116,9 +121,9 @@ function PartnerEditor({ partner, onSave, onClose }: { partner: Partner | null; 
 
 function AdminOverview({ partnerCount, partnerTotal, countryCount, sheetCount, latestUpload, recentActivity, isConnected }: { partnerCount: number; partnerTotal: number; countryCount: number; sheetCount: number; latestUpload: string; recentActivity: ActivityEntry[]; isConnected: boolean }) {
   const shortcuts = [
-    { href: '/admin/homepage', label: 'Site vitrine', description: 'Textes, expertises et entreprises', icon: Globe },
-    { href: '/partners', label: 'Voir les partenaires', description: 'Ouvrir le catalogue public', icon: Users },
-    { href: '/admin/countries', label: 'Filiales', description: 'Coordonnées des implantations', icon: Building2 },
+    { href: '/admin/partners', label: 'Gérer les partenaires', description: 'Catalogues, logos et visibilité', icon: Users },
+    { href: '/admin/countries', label: 'Filiales pays', description: 'Coordonnées des implantations', icon: Building2 },
+    { href: '/admin/team', label: 'Fiches d’équipe', description: 'Documents et organigrammes', icon: FileImage },
   ]
 
   return (
@@ -155,6 +160,7 @@ export function AdminPage({ email, onLogout }: { email: string; onLogout: () => 
   const navigate = useNavigate()
   const { data, update, apiStatus, refreshAdmin } = useAppData()
   const [editor, setEditor] = useState<Partner | null | undefined>(undefined)
+  const [partnerToDelete, setPartnerToDelete] = useState<Partner | null>(null)
   const [notice, setNotice] = useState('')
   const [partnerQuery, setPartnerQuery] = useState('')
   const activeView = (location.pathname.split('/').filter(Boolean)[1] as AdminView | undefined) ?? 'dashboard'
@@ -192,8 +198,14 @@ export function AdminPage({ email, onLogout }: { email: string; onLogout: () => 
     setNotice(`${partner.name} a été enregistré.`)
   }
 
-  async function deletePartner(partner: Partner) {
-    if (!window.confirm(`Supprimer le partenaire « ${partner.name} » ?`)) return
+  function deletePartner(partner: Partner) {
+    setPartnerToDelete(partner)
+  }
+
+  async function confirmPartnerDeletion() {
+    if (!partnerToDelete) return
+    const partner = partnerToDelete
+    setPartnerToDelete(null)
     try {
       if (apiBaseUrl) {
         await deletePartnerApi(partner.id)
@@ -237,17 +249,18 @@ export function AdminPage({ email, onLogout }: { email: string; onLogout: () => 
 
   return <><SiteHeader /><div className="admin-shell"><aside className="admin-sidebar"><div className="admin-identity"><span className="admin-avatar">{email.slice(0, 1).toUpperCase()}</span><span><strong>Administrateur</strong><small>{email}</small></span></div><nav aria-label="Administration">{views.map(({ id, label, icon: Icon }) => <NavLink key={id} to={id === 'dashboard' ? '/admin' : `/admin/${id}`} end={id === 'dashboard'} className={({ isActive }) => isActive ? 'admin-nav-link is-active' : 'admin-nav-link'}><Icon size={18} />{label}</NavLink>)}</nav><div className="admin-sidebar-footer"><button className="admin-signout" type="button" onClick={() => void handleLogout()}><LogOut size={16} />Déconnexion</button></div></aside><main className="admin-content">{notice && <div className="notice-bar" role="status">{notice}<button type="button" className="icon-button" aria-label="Fermer le message" onClick={() => setNotice('')}><X size={16} /></button></div>}
     {activeView === 'dashboard' && <AdminOverview partnerCount={activePartners} partnerTotal={data.partners.length} countryCount={data.countries.length} sheetCount={data.teamSheets.length} latestUpload={data.activity.find((entry) => entry.action === 'Remplacement de fiche') ? new Date(data.activity.find((entry) => entry.action === 'Remplacement de fiche')!.date).toLocaleDateString('fr-FR') : '—'} recentActivity={data.activity.slice(0, 4)} isConnected={apiStatus.state === 'connected'} />}
-    {activeView === 'homepage' && <HomepageContentEditor onSaved={setNotice} />}
     {activeView === 'partners' && <>
       <div className="admin-heading"><div><p className="eyebrow">CATALOGUE</p><h1>Partenaires</h1><p>{data.partners.length} entrées · {activePartners} actives</p></div><button className="primary-button" type="button" onClick={() => setEditor(null)}><Plus size={17} /> Nouveau partenaire</button></div>
       <div className="admin-table-toolbar"><label className="search-field"><Search size={17} aria-hidden="true" /><input type="search" value={partnerQuery} onChange={(event) => setPartnerQuery(event.target.value)} placeholder="Rechercher un partenaire, une catégorie…" aria-label="Rechercher dans les partenaires" /></label><span>{visiblePartners.length} résultat{visiblePartners.length === 1 ? '' : 's'}</span></div>
-      <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Partenaire</th><th>Catégorie</th><th>Pays</th><th>Statut</th><th>Site web</th><th>Actions</th></tr></thead><tbody>{visiblePartners.map((partner) => <tr key={partner.id}><td><span className="table-partner"><img src={partner.logo} alt="" /><span><strong>{partner.name}</strong>{partner.description && <small>{partner.description}</small>}</span></span></td><td>{partner.categoryName ?? categoryLabels[partner.category]}</td><td>{partner.countryCodes?.map((code) => data.countries.find((country) => country.isoCode === code)?.name ?? code).join(', ') || '—'}</td><td><span className={partner.active ? 'status-badge is-active' : 'status-badge'}>{partner.active ? 'Actif' : 'Inactif'}</span>{partner.featured && <span className="status-badge is-featured">En avant</span>}</td><td>{partner.website ? <a href={partner.website} target="_blank" rel="noreferrer">Ouvrir</a> : '—'}</td><td><div className="row-actions"><button className="icon-button" type="button" onClick={() => setEditor(partner)} aria-label={`Modifier ${partner.name}`}><Pencil size={16} /></button><button className="icon-button danger-button" type="button" onClick={() => void deletePartner(partner)} aria-label={`Supprimer ${partner.name}`}><Trash2 size={16} /></button></div></td></tr>)}{visiblePartners.length === 0 && <tr><td colSpan={6}><p className="empty-state">Aucun partenaire ne correspond à cette recherche.</p></td></tr>}</tbody></table></div>
+      <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Partenaire</th><th>Catégorie</th><th>Pays</th><th>Statut</th><th>Site web</th><th>Actions</th></tr></thead><tbody>{visiblePartners.map((partner) => <tr key={partner.id}><td><span className="table-partner"><img src={partner.logo} alt="" onError={(e) => { const el = e.currentTarget; if (!el.dataset.fallback) { el.dataset.fallback = '1'; el.src = '/media/partners/logo.svg' } }} /><span><strong>{partner.name}</strong>{partner.description && <small>{partner.description}</small>}</span></span></td><td>{partner.categoryName ?? categoryLabels[partner.category]}</td><td>{partner.countryCodes?.map((code) => data.countries.find((country) => country.isoCode === code)?.name ?? code).join(', ') || '—'}</td><td><span className={partner.active ? 'status-badge is-active' : 'status-badge'}>{partner.active ? 'Actif' : 'Inactif'}</span>{partner.featured && <span className="status-badge is-featured">En avant</span>}</td><td>{partner.website ? <a href={partner.website} target="_blank" rel="noreferrer">Ouvrir</a> : '—'}</td><td><div className="row-actions"><button className="icon-button" type="button" onClick={() => setEditor(partner)} aria-label={`Modifier ${partner.name}`}><Pencil size={16} /></button><button className="icon-button danger-button" type="button" onClick={() => void deletePartner(partner)} aria-label={`Supprimer ${partner.name}`}><Trash2 size={16} /></button></div></td></tr>)}{visiblePartners.length === 0 && <tr><td colSpan={6}><p className="empty-state">Aucun partenaire ne correspond à cette recherche.</p></td></tr>}</tbody></table></div>
     </>}
     {activeView === 'countries' && <><div className="admin-heading"><div><p className="eyebrow">COORDONNÉES PUBLIQUES</p><h1>Filiales pays</h1><p>Les modifications sont répercutées sur le site vitrine.</p></div></div><div className="country-admin-list">{data.countries.map((country) => <CountryEditor key={country.id} country={country} onSave={saveCountry} />)}</div></>}
     {activeView === 'team' && <><div className="admin-heading"><div><p className="eyebrow">DOCUMENTS & MÉDIAS</p><h1>Fiches d’équipe</h1><p>Remplacez une fiche sans modifier son ordre dans la galerie.</p></div></div><div className="team-admin-grid">{data.teamSheets.map((sheet) => <article className="team-admin-item" key={sheet.id}><img src={sheet.image} alt={sheet.title} /><div><strong>{sheet.title}</strong><label className="upload-button"><FileImage size={16} /> Remplacer<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void uploadSheet(sheet, event.target.files?.[0])} /></label></div></article>)}</div></>}
     {activeView === 'activity' && <><div className="admin-heading"><div><p className="eyebrow">TRAÇABILITÉ</p><h1>Journal d’activité</h1><p>Historique des changements effectués depuis cette interface.</p></div></div><div className="activity-list">{data.activity.length ? data.activity.map((entry) => <article key={entry.id}><span className="activity-dot" /><div><strong>{entry.action}</strong><p>{entry.target}</p></div><time>{new Date(entry.date).toLocaleString('fr-FR')}</time></article>) : <p className="empty-state">Aucune activité enregistrée.</p>}</div></>}
     <p className="admin-storage-note">{apiBaseUrl ? 'Les modifications sont enregistrées sur le serveur ANIEK et partagées entre les navigateurs.' : 'Mode aperçu local : les modifications restent dans ce navigateur. Pour les partager avec les autres navigateurs, le serveur Laravel et sa base de données doivent être démarrés.'}</p>
-  </main></div>{editor !== undefined && <PartnerEditor partner={editor} onSave={savePartner} onClose={() => setEditor(undefined)} />}</>
+  </main></div>{editor !== undefined && <PartnerEditor partner={editor} onSave={savePartner} onClose={() => setEditor(undefined)} />}
+    {partnerToDelete && <AdminConfirmDialog itemName={partnerToDelete.name} description="Ce partenaire sera supprimé du catalogue." onCancel={() => setPartnerToDelete(null)} onConfirm={() => void confirmPartnerDeletion()} />}
+  </>
 }
 
 function CountryEditor({ country, onSave }: { country: Country; onSave: (country: Country) => Promise<void> }) {

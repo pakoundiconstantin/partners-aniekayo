@@ -5,9 +5,9 @@ export const homepageContentStorageKey = 'aniek.homepage-content.v1'
 export const initialHomepageContent: HomepageContent = {
   hero: {
     eyebrow: 'PARTENAIRE DES ENTREPRISES EN AFRIQUE DE L’OUEST',
-    title: 'Un partenaire de confiance pour',
-    highlight: 'vos activités.',
-    description: 'Présent au Togo, au Mali, en Côte d’Ivoire, au Burkina Faso et au Niger, ANIEK Group Services accompagne les entreprises en équipements industriels, construction et maintenance mécanique.',
+    title: 'Des solutions industrielles au service de',
+    highlight: 'vos performances.',
+    description: 'Présent au Togo, au Mali, en Côte d’Ivoire, au Burkina Faso et au Niger, ANIEK Group Services accompagne les entreprises dans les domaines des équipements industriels, de la construction et de la maintenance mécanique.',
     image: '/media/home/industrial-maintenance.jpg',
   },
   expertise: {
@@ -45,4 +45,46 @@ export const initialHomepageContent: HomepageContent = {
     buttonLabel: 'Espace partenaires',
     href: '/partners',
   },
+}
+
+function hasLegacyHeroCopy(value: HomepageContent): boolean {
+  const hero = value?.hero
+  if (!hero) return false
+  return hero.title === 'Un partenaire de confiance pour' || hero.highlight === 'vos activités.' || hero.highlight === 'vos activités.'
+}
+
+export function normalizeHomepageContent(value: unknown): HomepageContent {
+  if (!value || typeof value !== 'object') return initialHomepageContent
+
+  const source = value as Partial<HomepageContent>
+  const normalized: HomepageContent = {
+    hero: { ...initialHomepageContent.hero, ...source.hero },
+    expertise: { ...initialHomepageContent.expertise, ...source.expertise, items: Array.isArray(source.expertise?.items) && source.expertise.items.length > 0 ? source.expertise.items : initialHomepageContent.expertise.items },
+    presence: { ...initialHomepageContent.presence, ...source.presence },
+    companies: { ...initialHomepageContent.companies, ...source.companies, items: Array.isArray(source.companies?.items) && source.companies.items.length > 0 ? source.companies.items : initialHomepageContent.companies.items },
+    partnerCallout: { ...initialHomepageContent.partnerCallout, ...source.partnerCallout },
+  }
+
+  if (hasLegacyHeroCopy(normalized)) {
+    return initialHomepageContent
+  }
+
+  return normalized
+}
+
+export function readStoredHomepageContent(): HomepageContent {
+  try {
+    const raw = localStorage.getItem(homepageContentStorageKey)
+    if (!raw) return initialHomepageContent
+
+    const parsed = JSON.parse(raw) as unknown
+    const normalized = normalizeHomepageContent(parsed)
+    if (normalized !== initialHomepageContent && JSON.stringify(normalized) !== raw) {
+      localStorage.setItem(homepageContentStorageKey, JSON.stringify(normalized))
+    }
+    return normalized
+  } catch {
+    localStorage.removeItem(homepageContentStorageKey)
+    return initialHomepageContent
+  }
 }

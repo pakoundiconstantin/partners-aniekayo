@@ -45,7 +45,9 @@ export async function savePartner(partner: Partner, logo?: File): Promise<void> 
   body.append('name', fields.name)
   body.append('category_id', String(fields.category_id))
   body.append('description', fields.description)
-  body.append('website_url', fields.website_url ?? '')
+  if (fields.website_url) {
+    body.append('website_url', fields.website_url)
+  }
   body.append('is_active', fields.is_active ? '1' : '0')
   body.append('is_featured', fields.is_featured ? '1' : '0')
   fields.country_codes.forEach((code, index) => body.append(`country_codes[${index}]`, code))

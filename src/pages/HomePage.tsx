@@ -1,16 +1,29 @@
-import { ArrowDown, ArrowRight, ArrowUpRight, Building2, Factory, HardHat, Mail, MapPin, Phone, Wrench } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUpRight, Mail, MapPin, Phone } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { homepageContentStorageKey, initialHomepageContent } from '../data/homepageDefaults'
+import { initialHomepageContent, readStoredHomepageContent } from '../data/homepageDefaults'
 import { NormalizedLogo } from '../components/NormalizedLogo'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome'
 import { initialSnapshot } from '../data/initialData'
 import { getHomepageContent } from '../services/adminApi'
 import { apiBaseUrl } from '../services/apiClient'
 import { useAppData } from '../services/dataStore'
-import type { Country } from '../types/domain'
+import type { Country, ExpertiseIcon } from '../types/domain'
 import dgPortrait from '../../../backup/image/DG.jpg'
+import maintenanceIndustrial1 from '../../../backup/image/maintenance industrielle1.jpg'
+import maintenanceIndustrial2 from '../../../backup/image/maintenance industrielle2.jpg'
+import maintenanceIndustrial3 from '../../../backup/image/maintenance industrielle3.jpg'
+import maintenanceIndustrial4 from '../../../backup/image/maintenance industrielle4.jpg'
+import maintenanceIndustrial5 from '../../../backup/image/maintenance industrielle5.jpg'
 import './HomePage.css'
+
+const heroSlides = [
+  maintenanceIndustrial1,
+  maintenanceIndustrial2,
+  maintenanceIndustrial3,
+  maintenanceIndustrial4,
+  maintenanceIndustrial5,
+]
 
 const countryOrder = ['togo', 'mali', 'cote-d-ivoire', 'burkina-faso', 'niger']
 
@@ -27,7 +40,12 @@ const countryFlags: Record<string, string> = {
   niger: 'niger.jpg',
 }
 
-const expertiseIcons = { Factory, HardHat, Wrench, Building2 }
+const expertiseImages: Record<ExpertiseIcon, { src: string; alt: string }> = {
+  Factory: { src: '/media/home/expertise/equipements-industriels.jpg', alt: 'Opérateur travaillant sur une machine industrielle' },
+  HardHat: { src: '/media/home/expertise/construction-btp.jpg', alt: 'Ouvrier intervenant sur une structure de construction' },
+  Wrench: { src: '/media/home/expertise/maintenance-mecanique.jpg', alt: 'Technicien réalisant une intervention mécanique' },
+  Building2: { src: '/media/home/expertise/services-entreprises.jpg', alt: 'Équipe technique inspectant des éléments sur le terrain' },
+}
 
 function CountryCard({ country, index, tabId }: { country: Country; index: number; tabId: string }) {
   const flag = country.flag || countryFlags[country.id]
@@ -35,6 +53,7 @@ function CountryCard({ country, index, tabId }: { country: Country; index: numbe
     .filter(Boolean)
     .join(' · ')
     .replace(/(?:\s*\|\s*){2,}/g, ' | ')
+  const showPortalsFirst = country.id === 'togo'
 
   return (
     <article className="home-country home-country--selected" id={country.id} role="tabpanel" aria-labelledby={tabId}>
@@ -60,28 +79,58 @@ function CountryCard({ country, index, tabId }: { country: Country; index: numbe
         {country.taxNumber && <p><small>IMMATRICULATION FISCALE</small><span>{country.taxNumber}</span></p>}
         {country.postOfficeBox && <p><small>BOÎTE POSTALE</small><span>{country.postOfficeBox}</span></p>}
       </div>
-      {!!country.monthlyReminders?.length && (
-        <section className="home-country__reminders" aria-label="Rappels mensuels">
-          <h4>Rappels mensuels</h4>
-          <dl>{country.monthlyReminders.map((reminder) => <div key={reminder.label}><dt>{reminder.label}</dt><dd>{reminder.value}</dd></div>)}</dl>
-          {country.reminderNote && <p>{country.reminderNote}</p>}
-        </section>
-      )}
-      {!!country.portals?.length && (
-        <section className="home-country__portals" aria-label={`Portails et services pour ${country.name}`}>
-          <div className="home-country__portals-heading"><div><small>RESSOURCES LOCALES</small><h4>Portails et services</h4></div><span>{country.portals.length} liens</span></div>
-          <div className="home-country__portal-grid">
-            {country.portals.map((portal) => (
-              <article className="home-portal-card" key={`${portal.website}|${portal.image}`}>
-                <a className="home-portal-card__image" href={portal.website || undefined} target={portal.website ? '_blank' : undefined} rel={portal.website ? 'noreferrer' : undefined} aria-label={`Ouvrir ${portal.name}`}>
-                  <NormalizedLogo source={portal.image} name={portal.name} />
-                </a>
-                <p>{portal.name}</p>
-                {portal.website ? <a className="home-portal-card__link" href={portal.website} target="_blank" rel="noreferrer">Ouvrir le site <ArrowUpRight size={14} aria-hidden="true" /></a> : <span className="home-portal-card__unavailable">Lien indisponible</span>}
-              </article>
-            ))}
-          </div>
-        </section>
+      {showPortalsFirst ? (
+        <>
+          {!!country.portals?.length && (
+            <section className="home-country__portals" aria-label={`Portails et services pour ${country.name}`}>
+              <div className="home-country__portals-heading"><div><small>RESSOURCES LOCALES</small><h4>Portails et services</h4></div><span>{country.portals.length} liens</span></div>
+              <div className="home-country__portal-grid">
+                {country.portals.map((portal) => (
+                  <article className="home-portal-card" key={`${portal.website}|${portal.image}`}>
+                    <a className="home-portal-card__image" href={portal.website || undefined} target={portal.website ? '_blank' : undefined} rel={portal.website ? 'noreferrer' : undefined} aria-label={`Ouvrir ${portal.name}`}>
+                      <NormalizedLogo source={portal.image} name={portal.name} />
+                    </a>
+                    <p>{portal.name}</p>
+                    {portal.website ? <a className="home-portal-card__link" href={portal.website} target="_blank" rel="noreferrer">Ouvrir le site <ArrowUpRight size={14} aria-hidden="true" /></a> : <span className="home-portal-card__unavailable">Lien indisponible</span>}
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+          {!!country.monthlyReminders?.length && (
+            <section className="home-country__reminders" aria-label="Rappels mensuels">
+              <h4>Rappels mensuels</h4>
+              <dl>{country.monthlyReminders.map((reminder) => <div key={reminder.label}><dt>{reminder.label}</dt><dd>{reminder.value}</dd></div>)}</dl>
+              {country.reminderNote && <p>{country.reminderNote}</p>}
+            </section>
+          )}
+        </>
+      ) : (
+        <>
+          {!!country.monthlyReminders?.length && (
+            <section className="home-country__reminders" aria-label="Rappels mensuels">
+              <h4>Rappels mensuels</h4>
+              <dl>{country.monthlyReminders.map((reminder) => <div key={reminder.label}><dt>{reminder.label}</dt><dd>{reminder.value}</dd></div>)}</dl>
+              {country.reminderNote && <p>{country.reminderNote}</p>}
+            </section>
+          )}
+          {!!country.portals?.length && (
+            <section className="home-country__portals" aria-label={`Portails et services pour ${country.name}`}>
+              <div className="home-country__portals-heading"><div><small>RESSOURCES LOCALES</small><h4>Portails et services</h4></div><span>{country.portals.length} liens</span></div>
+              <div className="home-country__portal-grid">
+                {country.portals.map((portal) => (
+                  <article className="home-portal-card" key={`${portal.website}|${portal.image}`}>
+                    <a className="home-portal-card__image" href={portal.website || undefined} target={portal.website ? '_blank' : undefined} rel={portal.website ? 'noreferrer' : undefined} aria-label={`Ouvrir ${portal.name}`}>
+                      <NormalizedLogo source={portal.image} name={portal.name} />
+                    </a>
+                    <p>{portal.name}</p>
+                    {portal.website ? <a className="home-portal-card__link" href={portal.website} target="_blank" rel="noreferrer">Ouvrir le site <ArrowUpRight size={14} aria-hidden="true" /></a> : <span className="home-portal-card__unavailable">Lien indisponible</span>}
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </article>
   )
@@ -91,12 +140,9 @@ export function HomePage() {
   const { data } = useAppData()
   const [homepage, setHomepage] = useState(() => {
     if (apiBaseUrl) return initialHomepageContent
-    try {
-      return JSON.parse(localStorage.getItem(homepageContentStorageKey) ?? 'null') as typeof initialHomepageContent | null ?? initialHomepageContent
-    } catch {
-      return initialHomepageContent
-    }
+    return readStoredHomepageContent()
   })
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0)
   const location = useLocation()
   const navigate = useNavigate()
   const countries = countryOrder.flatMap((id) => {
@@ -121,6 +167,14 @@ export function HomePage() {
     return () => { active = false }
   }, [])
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveHeroSlide((current) => (current + 1) % heroSlides.length)
+    }, 3000)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
+
   function showCountry(countryId: string) {
     navigate({ pathname: '/', search: `?pays=${encodeURIComponent(countryId)}`, hash: '#implantations' }, { preventScrollReset: true })
     document.getElementById('implantations')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -143,7 +197,11 @@ export function HomePage() {
               <div className="home-hero__proof"><strong>5</strong><span>pays d’implantation<br />en Afrique de l’Ouest</span><span className="home-hero__proof-line" /><span>Togo · Mali · Côte d’Ivoire<br />Burkina Faso · Niger</span></div>
             </div>
             <figure className="home-hero__photo">
-              <img src={homepage.hero.image} alt={homepage.hero.title} fetchPriority="high" />
+              <div className="home-hero__photo-slider" aria-live="polite">
+                {heroSlides.map((slide, index) => (
+                  <img key={slide} src={slide} alt={homepage.hero.title} fetchPriority={index === 0 ? 'high' : 'auto'} className={index === activeHeroSlide ? 'is-active' : ''} />
+                ))}
+              </div>
               <figcaption><span>MAINTENANCE INDUSTRIELLE</span></figcaption>
             </figure>
           </div>
@@ -153,13 +211,13 @@ export function HomePage() {
         <section className="home-director" aria-labelledby="director-title">
           <div className="home-director__inner">
             <div className="home-director__copy">
-              <p className="home-eyebrow home-eyebrow--dark">ANIEK &amp; AYO SARL</p>
-              <h2 id="director-title">Le Directeur Général</h2>
+              <p className="home-eyebrow home-eyebrow--dark">ANIEK &amp; AYO</p>
+              <h2 id="director-title">Le Directeur des opérations</h2>
               <p>Fondée en 2017, ANIEK &amp; AYO accompagne les entreprises d’Afrique de l’Ouest avec des solutions d’équipements industriels, d’ingénierie et de maintenance adaptées aux réalités du terrain.</p>
             </div>
             <figure className="home-director__portrait">
-              <img src={dgPortrait} alt="Portrait du Directeur Général d’ANIEK & AYO" loading="lazy" />
-              <figcaption>Directeur Général <span>ANIEK &amp; AYO SARL</span></figcaption>
+              <img src={dgPortrait} alt="Portrait du Directeur des opérations d’ANIEK & AYO" loading="lazy" />
+              <figcaption>Directeur des opérations <span>ANIEK &amp; AYO</span></figcaption>
             </figure>
           </div>
         </section>
@@ -171,14 +229,18 @@ export function HomePage() {
           </div>
           <div className="home-expertise-grid">
             {homepage.expertise.items.map(({ title, description, icon }, index) => {
-              const Icon = expertiseIcons[icon] ?? Building2
+              const image = expertiseImages[icon] ?? expertiseImages.Factory
               return (
-              <article className="home-expertise-item" key={title}>
-                <span className="home-expertise-item__number">0{index + 1}</span>
-                <Icon size={25} strokeWidth={1.6} aria-hidden="true" />
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </article>
+                <article className="home-expertise-item" key={title}>
+                  <div className="home-expertise-item__visual">
+                    <img src={image.src} alt={image.alt} loading="lazy" />
+                    <span className="home-expertise-item__number" aria-hidden="true">0{index + 1}</span>
+                  </div>
+                  <div className="home-expertise-item__body">
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                  </div>
+                </article>
               )
             })}
           </div>
