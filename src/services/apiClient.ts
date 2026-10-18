@@ -77,7 +77,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     if (response.status >= 500) {
       const isAuthenticationRequest = path === '/auth/login' || path === '/partners/access'
       throw new Error(isAuthenticationRequest
-        ? 'Le service de connexion est en erreur. Vérifiez la configuration du serveur auprès de l’administrateur.'
+        ? 'Le service de connexion est en erreur. Vérifiez la configuration du serveur auprès du support.'
         : 'Les données du serveur sont momentanément indisponibles. Réessayez plus tard.')
     }
     const error = payload as ApiErrorPayload

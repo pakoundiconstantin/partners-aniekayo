@@ -38,7 +38,7 @@ export function LoginPage({ role, onSubmit }: { role: AuthSession['role']; onSub
           {isAdmin ? (
             <div className="login-admin-brand">
               <div className="login-mark"><LockKeyhole size={17} /></div>
-              <p className="eyebrow">ACCÈS ADMINISTRATEUR</p>
+              <p className="eyebrow">ACCÈS RÉSERVÉ</p>
             </div>
           ) : (
             <>
@@ -46,7 +46,7 @@ export function LoginPage({ role, onSubmit }: { role: AuthSession['role']; onSub
               <p className="eyebrow">ANIEK GROUP SERVICES</p>
             </>
           )}
-          <h1>{isAdmin ? 'Administration' : 'Espace partenaires'}</h1>
+          <h1>{isAdmin ? 'Accès réservé' : 'Espace partenaires'}</h1>
           <p className="login-intro">
             {isAdmin ? 'Connectez-vous pour gérer les contenus du groupe.' : 'Connectez-vous à l’espace partenaires ANIEK.'}
           </p>
@@ -74,7 +74,7 @@ export function LoginPage({ role, onSubmit }: { role: AuthSession['role']; onSub
           <p className="prototype-note">
             {import.meta.env.VITE_API_BASE_URL ? 'Connexion sécurisée par le serveur ANIEK.' : 'Mode aperçu local : les identifiants de test ne sécurisent pas les comptes.'}
           </p>
-          {!isAdmin && <Link className="admin-login-link" to="/admin/login">Accès administrateur</Link>}
+          {!isAdmin && <Link className="admin-login-link" to="/admin/login">Accès réservé</Link>}
         </section>
       </main>
     </>

@@ -4,7 +4,7 @@ import type { Country, HomepageContent, Partner, TeamSheet } from '../types/doma
 
 function token(): string {
   const value = authService.getSession()?.token
-  if (!value) throw new Error('Session administrateur absente. Reconnectez-vous.')
+  if (!value) throw new Error('Session accès réservé absente. Reconnectez-vous.')
   return value
 }
 

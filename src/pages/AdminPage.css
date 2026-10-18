@@ -17,9 +17,9 @@
 .admin-signout { display:flex; align-items:center; gap:9px; width:100%; min-height:38px; padding:0 10px; border:1px solid transparent; border-radius:3px; background:transparent; color:#756a6a; text-align:left; font-size:11px; font-weight:700; cursor:pointer; transition:background .16s,color .16s,border-color .16s; }
 .admin-signout:hover { border-color:#f0dddd; background:#fff7f7; color:var(--red-deep); }
 .admin-signout:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
-@media (min-width:961px) { .admin-shell .admin-sidebar { top:72px; height:calc(100vh - 72px); height:calc(100svh - 72px); box-sizing:border-box; } }
-@media (min-width:769px) and (max-width:960px) { .admin-shell .admin-sidebar { top:72px; height:calc(100vh - 72px); height:calc(100svh - 72px); box-sizing:border-box; } .admin-shell .admin-sidebar nav { flex:1; min-height:0; overflow-y:auto; } }
-@media(max-width:768px) { .admin-table-toolbar { align-items:stretch; flex-direction:column; gap:8px; }.admin-table-toolbar .search-field { width:100%; }.partner-status-options { grid-template-columns:1fr; }.admin-table .table-partner { min-width:145px; } }
+@media (min-width:1001px) { .admin-shell .admin-sidebar { top:96px; height:calc(100vh - 96px); box-sizing:border-box; } }
+@media (min-width:681px) and (max-width:1000px) { .admin-shell .admin-sidebar { top:127px; height:calc(100vh - 127px); box-sizing:border-box; overflow:hidden; }.admin-shell .admin-sidebar nav { flex:1; min-height:0; overflow-y:auto; align-content:start; } }
+@media(max-width:700px) { .admin-table-toolbar { align-items:stretch; flex-direction:column; }.admin-table-toolbar .search-field { width:auto; }.partner-status-options { grid-template-columns:1fr; }.admin-table .table-partner { min-width:145px; } }
 .admin-overview { width:100%; max-width:1320px; margin:0 auto; }
 .overview-intro { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin:4px 0 28px; }
 .overview-intro h1 { margin:0; color:#292626; font-size:36px; font-weight:800; line-height:1.1; }
@@ -41,7 +41,7 @@
 .overview-metrics span:not(.overview-metric-icon) { color:#403838; font-size:11px; font-weight:800; }
 .overview-metrics small { overflow:hidden; color:#817777; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
 .overview-metrics .overview-metric-date { font-size:18px; line-height:1.45; }
-.overview-lower-grid { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr); gap:32px; margin-top:34px; }
+.overview-lower-grid { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr); gap:32px; margin-top:34px; }
 .overview-shortcuts,.overview-activity { min-width:0; }
 .overview-section-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; min-height:45px; margin-bottom:10px; padding-bottom:12px; border-bottom:1px solid #e7dddd; }
 .overview-section-heading .eyebrow { margin-bottom:5px; font-size:9px; }

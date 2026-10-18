@@ -44,7 +44,7 @@ function validatePreviewCredentials(role: AuthSession['role'], email: string, pa
     ? !defaultAdminEmails.includes(normalizedEmail) || !defaultAdminPasswords.includes(cleanPassword)
     : !defaultPartnerKeys.some((k) => k.toLowerCase() === cleanPassword.toLowerCase())
   if (invalid) {
-    throw new Error(`Identifiants invalides pour l'accès ${role === 'admin' ? 'administrateur' : 'partenaire'}.`)
+    throw new Error(`Identifiants invalides pour l'accès ${role === 'admin' ? 'réservé' : 'partenaire'}.`)
   }
 }
 
