@@ -247,12 +247,48 @@ export function AdminPage({ email, onLogout }: { email: string; onLogout: () => 
     }
   }
 
-  return <><SiteHeader /><div className="admin-shell"><aside className="admin-sidebar"><div className="admin-identity"><span className="admin-avatar">{email.slice(0, 1).toUpperCase()}</span><span><strong>Administrateur</strong><small>{email}</small></span></div><nav aria-label="Administration">{views.map(({ id, label, icon: Icon }) => <NavLink key={id} to={id === 'dashboard' ? '/admin' : `/admin/${id}`} end={id === 'dashboard'} className={({ isActive }) => isActive ? 'admin-nav-link is-active' : 'admin-nav-link'}><Icon size={18} />{label}</NavLink>)}</nav><div className="admin-sidebar-footer"><button className="admin-signout" type="button" onClick={() => void handleLogout()}><LogOut size={16} />Déconnexion</button></div></aside><main className="admin-content">{notice && <div className="notice-bar" role="status">{notice}<button type="button" className="icon-button" aria-label="Fermer le message" onClick={() => setNotice('')}><X size={16} /></button></div>}
+  return <><SiteHeader /><div className="admin-shell"><aside className="admin-sidebar"><div className="admin-identity"><span className="admin-avatar">{email.slice(0, 1).toUpperCase()}</span><span><strong>Direction Générale</strong><small>{email}</small></span><button className="admin-signout-top" type="button" onClick={() => void handleLogout()} title="Se déconnecter" aria-label="Se déconnecter"><LogOut size={16} /><span>Déconnexion</span></button></div><nav aria-label="Administration">{views.map(({ id, label, icon: Icon }) => <NavLink key={id} to={id === 'dashboard' ? '/admin' : `/admin/${id}`} end={id === 'dashboard'} className={({ isActive }) => isActive ? 'admin-nav-link is-active' : 'admin-nav-link'}><Icon size={18} /><span>{label}</span></NavLink>)}</nav><div className="admin-sidebar-footer"><button className="admin-signout" type="button" onClick={() => void handleLogout()}><LogOut size={16} />Déconnexion</button></div></aside><main className="admin-content">{notice && <div className="notice-bar" role="status">{notice}<button type="button" className="icon-button" aria-label="Fermer le message" onClick={() => setNotice('')}><X size={16} /></button></div>}
     {activeView === 'dashboard' && <AdminOverview partnerCount={activePartners} partnerTotal={data.partners.length} countryCount={data.countries.length} sheetCount={data.teamSheets.length} latestUpload={data.activity.find((entry) => entry.action === 'Remplacement de fiche') ? new Date(data.activity.find((entry) => entry.action === 'Remplacement de fiche')!.date).toLocaleDateString('fr-FR') : '—'} recentActivity={data.activity.slice(0, 4)} isConnected={apiStatus.state === 'connected'} />}
     {activeView === 'partners' && <>
       <div className="admin-heading"><div><p className="eyebrow">CATALOGUE</p><h1>Partenaires</h1><p>{data.partners.length} entrées · {activePartners} actives</p></div><button className="primary-button" type="button" onClick={() => setEditor(null)}><Plus size={17} /> Nouveau partenaire</button></div>
       <div className="admin-table-toolbar"><label className="search-field"><Search size={17} aria-hidden="true" /><input type="search" value={partnerQuery} onChange={(event) => setPartnerQuery(event.target.value)} placeholder="Rechercher un partenaire, une catégorie…" aria-label="Rechercher dans les partenaires" /></label><span>{visiblePartners.length} résultat{visiblePartners.length === 1 ? '' : 's'}</span></div>
+      
+      {/* Desktop Table View */}
       <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Partenaire</th><th>Catégorie</th><th>Pays</th><th>Statut</th><th>Site web</th><th>Actions</th></tr></thead><tbody>{visiblePartners.map((partner) => <tr key={partner.id}><td><span className="table-partner"><img src={partner.logo} alt="" onError={(e) => { const el = e.currentTarget; if (!el.dataset.fallback) { el.dataset.fallback = '1'; el.src = '/media/partners/logo.svg' } }} /><span><strong>{partner.name}</strong>{partner.description && <small>{partner.description}</small>}</span></span></td><td>{partner.categoryName ?? categoryLabels[partner.category]}</td><td>{partner.countryCodes?.map((code) => data.countries.find((country) => country.isoCode === code)?.name ?? code).join(', ') || '—'}</td><td><span className={partner.active ? 'status-badge is-active' : 'status-badge'}>{partner.active ? 'Actif' : 'Inactif'}</span>{partner.featured && <span className="status-badge is-featured">En avant</span>}</td><td>{partner.website ? <a href={partner.website} target="_blank" rel="noreferrer">Ouvrir</a> : '—'}</td><td><div className="row-actions"><button className="icon-button" type="button" onClick={() => setEditor(partner)} aria-label={`Modifier ${partner.name}`}><Pencil size={16} /></button><button className="icon-button danger-button" type="button" onClick={() => void deletePartner(partner)} aria-label={`Supprimer ${partner.name}`}><Trash2 size={16} /></button></div></td></tr>)}{visiblePartners.length === 0 && <tr><td colSpan={6}><p className="empty-state">Aucun partenaire ne correspond à cette recherche.</p></td></tr>}</tbody></table></div>
+
+      {/* Mobile Touch Cards View (pour smartphone DG) */}
+      <div className="admin-partner-cards-mobile" aria-label="Liste mobile des partenaires">
+        {visiblePartners.map((partner) => (
+          <article className="admin-partner-mobile-card" key={partner.id}>
+            <div className="admin-partner-mobile-card__top">
+              <div className="admin-partner-mobile-card__logo">
+                <img src={partner.logo} alt="" onError={(e) => { const el = e.currentTarget; if (!el.dataset.fallback) { el.dataset.fallback = '1'; el.src = '/media/partners/logo.svg' } }} />
+              </div>
+              <div className="admin-partner-mobile-card__info">
+                <strong>{partner.name}</strong>
+                <span className="admin-partner-mobile-card__category">{partner.categoryName ?? categoryLabels[partner.category]}</span>
+                <div className="admin-partner-mobile-card__badges">
+                  <span className={partner.active ? 'status-badge is-active' : 'status-badge'}>{partner.active ? 'Actif' : 'Inactif'}</span>
+                  {partner.featured && <span className="status-badge is-featured">En avant</span>}
+                </div>
+              </div>
+            </div>
+            {partner.description && <p className="admin-partner-mobile-card__desc">{partner.description}</p>}
+            <div className="admin-partner-mobile-card__countries">
+              <small>Couverture :</small>
+              <span>{partner.countryCodes?.map((code) => data.countries.find((country) => country.isoCode === code)?.name ?? code).join(', ') || 'Tous pays'}</span>
+            </div>
+            <div className="admin-partner-mobile-card__footer">
+              {partner.website ? <a href={partner.website} target="_blank" rel="noreferrer" className="admin-partner-mobile-card__link">Visiter le site <ArrowUpRight size={13} /></a> : <span className="admin-partner-mobile-card__link is-disabled">Lien non défini</span>}
+              <div className="admin-partner-mobile-card__actions">
+                <button type="button" className="admin-touch-btn admin-touch-btn--edit" onClick={() => setEditor(partner)} aria-label={`Modifier ${partner.name}`}><Pencil size={15} /> Modifier</button>
+                <button type="button" className="admin-touch-btn admin-touch-btn--delete" onClick={() => void deletePartner(partner)} aria-label={`Supprimer ${partner.name}`}><Trash2 size={15} /> Supprimer</button>
+              </div>
+            </div>
+          </article>
+        ))}
+        {visiblePartners.length === 0 && <p className="empty-state">Aucun partenaire ne correspond à cette recherche.</p>}
+      </div>
     </>}
     {activeView === 'countries' && <><div className="admin-heading"><div><p className="eyebrow">COORDONNÉES PUBLIQUES</p><h1>Filiales pays</h1><p>Les modifications sont répercutées sur le site vitrine.</p></div></div><div className="country-admin-list">{data.countries.map((country) => <CountryEditor key={country.id} country={country} onSave={saveCountry} />)}</div></>}
     {activeView === 'team' && <><div className="admin-heading"><div><p className="eyebrow">DOCUMENTS & MÉDIAS</p><h1>Fiches d’équipe</h1><p>Remplacez une fiche sans modifier son ordre dans la galerie.</p></div></div><div className="team-admin-grid">{data.teamSheets.map((sheet) => <article className="team-admin-item" key={sheet.id}><img src={sheet.image} alt={sheet.title} /><div><strong>{sheet.title}</strong><label className="upload-button"><FileImage size={16} /> Remplacer<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void uploadSheet(sheet, event.target.files?.[0])} /></label></div></article>)}</div></>}

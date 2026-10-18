@@ -629,54 +629,130 @@
   }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 768px) {
   .partners-page {
-    padding-top: 31px;
+    padding-top: 24px;
   }
 
   .partners-page .page-title-row {
     align-items: flex-start;
     flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
   }
 
   .partners-page .page-title-row h1 {
-    font-size: 29px;
+    font-size: 28px;
   }
 
   .partners-overview {
     grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .partners-overview__stat {
+    min-height: 76px;
+    padding: 14px 16px;
   }
 
   .partners-overview__status {
-    min-height: 74px;
+    min-height: 60px;
+    padding: 12px 16px;
+    font-size: 11px;
   }
 
+  .partners-page .search-field {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .partners-page .search-field input {
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+  }
+
+  .partners-page .category-filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+  }
+
+  .partners-page .category-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .partners-page .filter-chip {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .partners-page .partner-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .partners-page .partner-card {
+    min-height: 145px;
+    border-radius: 6px;
+  }
+
+  .partners-page .partner-logo {
+    height: 90px;
+    padding: 10px;
+  }
+
+  .partners-page .partner-logo img {
+    max-width: 80%;
+    max-height: 65px;
+  }
+
+  .partners-page .partner-card-caption {
+    min-height: 52px;
+    padding: 8px 10px;
+  }
+
+  .partners-page .partner-card-caption strong {
+    font-size: 12px;
+  }
+
+  .partners-page .strategic-section {
+    padding: 18px 14px;
+  }
+
+  .partners-page .strategic-card {
+    padding: 14px;
+  }
+
+  .partners-page .strategic-card a {
+    min-height: 36px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
   .partners-page .partner-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
-  .partners-page .partner-card {
-    min-height: 135px;
-  }
-
   .partners-page .partner-logo {
-    padding: 10px;
+    height: 80px;
   }
 
-  .partners-page .partner-card-caption {
-    min-height: 52px;
-    padding: 8px;
-  }
-
-  .partners-page .team-resources {
-    grid-template-columns: 1fr;
-    padding: 22px;
+  .partners-page .partner-card-caption strong {
+    font-size: 11px;
   }
 }
 
-@media (max-width: 420px) {
-  .partners-page .partner-logo {
-    aspect-ratio: 1.25;
+@media (max-width: 340px) {
+  .partners-page .partner-grid {
+    grid-template-columns: 1fr;
   }
 }
