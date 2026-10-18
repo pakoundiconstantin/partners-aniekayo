@@ -37,7 +37,7 @@ const normalize = (value: string) =>
 export function PartnersPage() {
   const { data, apiStatus } = useAppData();
   const displayedPartners =
-    apiStatus.state === "demo" ? fallbackPartners : data.partners;
+    data.partners.length > 0 ? data.partners : fallbackPartners;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"all" | PartnerCategory>("all");
   const [viewerOpen, setViewerOpen] = useState(false);

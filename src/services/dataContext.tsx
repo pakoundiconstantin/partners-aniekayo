@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
-import { categoryFromSlug, initialSnapshot } from '../data/initialData'
+import { categoryFromSlug, fallbackPartners, initialSnapshot } from '../data/initialData'
 import type { AppSnapshot } from '../types/domain'
 import { DataContext } from './dataStore'
 import { apiBaseUrl, apiMediaUrl, apiRequest } from './apiClient'
@@ -193,19 +193,20 @@ function loadSnapshot(): AppSnapshot {
 function loadApiSnapshot(): AppSnapshot {
   try {
     const stored = localStorage.getItem(API_DATA_KEY)
-    if (!stored) return initialSnapshot
+    if (!stored) return { ...initialSnapshot, partners: fallbackPartners }
     const value: unknown = JSON.parse(stored)
-    if (typeof value !== 'object' || value === null) return initialSnapshot
+    if (typeof value !== 'object' || value === null) return { ...initialSnapshot, partners: fallbackPartners }
     const cached = value as Partial<AppSnapshot>
+    const partners = Array.isArray(cached.partners) && cached.partners.length > 0 ? cached.partners : fallbackPartners
     return mergeSnapshot({
-      partners: Array.isArray(cached.partners) ? cached.partners : [],
+      partners,
       categories: Array.isArray(cached.categories) ? cached.categories : [],
       countries: Array.isArray(cached.countries) ? cached.countries : [],
       teamSheets: Array.isArray(cached.teamSheets) ? cached.teamSheets : [],
       activity: [],
     })
   } catch {
-    return initialSnapshot
+    return { ...initialSnapshot, partners: fallbackPartners }
   }
 }
 
@@ -267,7 +268,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
         setData((current) => ({
           ...current,
-          partners: partners.status === 'fulfilled' ? partners.value.data.map(mapPartner) : current.partners,
+          partners: partners.status === 'fulfilled' && partners.value.data.length > 0
+            ? partners.value.data.map(mapPartner)
+            : (current.partners.length > 0 ? current.partners : fallbackPartners),
         }))
         setApiStatus(partners.status === 'fulfilled' && partners.value.data.length > 0
           ? { state: 'connected' }
