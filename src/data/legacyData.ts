@@ -1,4 +1,4 @@
-import legacyHtml from '../../../backup/index.html?raw'
+import legacyHtml from './legacy.html?raw'
 import type { Country, CountryPortal } from '../types/domain'
 
 const sections = [

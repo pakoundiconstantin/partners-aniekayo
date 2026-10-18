@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>ANIEK Group Services</title>
+    <link rel="icon" type="image/webp" href="image/ANIEKGROUP.webp" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Style des tableaux de contact (un par pays) -->agy
+    <style>
+      /* ===== STYLE PARFAIT POUR LE TABLEAU ===== */
+      .country-contact-table {
+        width: 100%;
+        max-width: 700px;
+        margin: 50px auto 20px;
+        border-collapse: collapse;
+        font-family: "Manrope", sans-serif;
+        font-size: 14px;
+        background-color: #fff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+      }
+
+      .country-table-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        width: 100%;
+        max-width: 1180px;
+        margin: 50px auto 20px;
+      }
+
+      .country-table-grid .country-contact-table {
+        max-width: none;
+        margin: 0;
+        height: 100%;
+      }
+
+      .reminder-table th {
+        background-color: #7f7070;
+      }
+
+      .reminder-table .note-cell {
+        color: #6f5d5d;
+        font-size: 13px;
+        line-height: 1.45;
+        text-align: left;
+      }
+
+      /* Barre rouge bordeaux pleine largeur + texte centré */
+      .country-contact-table th {
+        background-color: #a89494;
+        color: white;
+        padding: 18px 15px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 17px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+      }
+
+      .country-contact-table.reminder-table th {
+        background-color: #7f7070;
+      }
+
+      /* Cellules normales */
+      .country-contact-table td {
+        padding: 14px 18px;
+        border-bottom: 1px solid #eee;
+        background-color: #fdfdfd;
+      }
+
+      .country-contact-table td:first-child {
+        font-weight: 600;
+        color: #333;
+        width: 48%;
+        text-align: left;
+      }
+
+      .country-contact-table td:last-child {
+        text-align: right;
+        color: #1a5d8c;
+        font-weight: 900;
+      }
+
+      .country-contact-table.reminder-table .note-cell {
+        color: #6f5d5d;
+        text-align: left;
+      }
+
+      .country-contact-table.reminder-table .forecast-note {
+        color: #c40000;
+        font-weight: 700;
+        line-height: 1.5;
+        text-align: left;
+      }
+
+      .country-contact-table a {
+        color: #1a5d8c;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .country-contact-table a:hover {
+        color: #800020;
+        text-decoration: underline;
+      }
+
+      .country-contact-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* Espace entre les logos et le tableau */
+      .companies + .country-contact-table {
+        margin-top: 50px;
+      }
+
+      .companies + .country-table-grid {
+        margin-top: 50px;
+      }
+
+      .address-strip {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 24px;
+        max-width: 1180px;
+        margin: 18px auto 0;
+        padding: 14px 18px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+        font-family: "Manrope", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .address-strip span {
+        text-align: center;
+      }
+
+      .address-strip .address-separator {
+        color: #999;
+      }
+
+      .address-strip strong {
+        color: #800020;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+
+      /* Responsive */
+      @media (max-width: 900px) {
+        .country-table-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .country-table-grid {
+          grid-template-columns: 1fr;
+          gap: 18px;
+          margin: 40px auto;
+        }
+        .country-contact-table {
+          margin: 40px auto;
+        }
+        .country-table-grid .country-contact-table {
+          margin: 0 auto;
+        }
+        .country-contact-table td {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px 15px;
+        }
+        .country-contact-table td:before {
+          content: attr(data-label);
+          font-weight: 600;
+          color: #333;
+        }
+        .country-contact-table .note-cell:before {
+          display: none;
+        }
+        .country-contact-table .forecast-note:before {
+          display: none;
+        }
+        .address-strip {
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav_menu">
+      <div class="partner-link">
+        <a
+          href="partners.php"
+          title="Accès Partenaires"
+          aria-label="Partenaires"
+          >PARTENAIRES</a
+        >
+      </div>
+      <ul>
+        <li>
+          <a
+            href="#"
+            onclick="showSection('togo')"
+            title="Afficher les services au Togo"
+            aria-label="Togo"
+            ><img src="image/togo.png" alt="TOGO" class="flag"
+          /></a>
+        </li>
+        <li>
+          <a
+            href="#"
+            onclick="showSection('mali')"
+            title="Afficher les services au Mali"
+            aria-label="Mali"
+            ><img src="image/drapoMali.png" alt="MALI" class="flag"
+          /></a>
+        </li>
+        <li>
+          <a
+            href="#"
+            onclick="showSection('cote-d-ivoire')"
+            title="Afficher les services en Côte d'Ivoire"
+            aria-label="Côte d'Ivoire"
+          >
+            <img src="image/CI.png" alt="CÔTE D’IVOIRE" class="flag"
+          /></a>
+        </li>
+        <li>
+          <a
+            href="#"
+            onclick="showSection('brukina-faso')"
+            title="Afficher les services au Burkina Faso"
+            aria-label="Burkina Faso"
+            ><img src="image/burkina-faso.jpg" alt="burkina-faso" class="flag"
+          /></a>
+        </li>
+        <li>
+          <a
+            href="#"
+            onclick="showSection('niger')"
+            title="Afficher les services au Niger"
+            aria-label="Niger"
+            ><img src="image/niger.jpg" alt="niger" class="flag"
+          /></a>
+        </li>
+      </ul>
+    </nav>
+
+    <main>
+      <!-- SECTION OVERVIEW -->
+      <section id="overview" class="country">
+        <h2>TOGO</h2>
+        <div class="companies">
+          <div class="company">
+            <a
+              href="https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3"
+              target="_blank"
+              ><img
+                src="image/img1.png"
+                alt="OTR DIMANA"
+                title="Accéder au portail OTR DIMANA"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://gudef.otr.tg/" target="_blank"
+              ><img
+                src="image/gudef.jpg"
+                alt="OTR GUDEF"
+                title="Accéder au portail de GUDEF"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://passe.arcop.tg/publics/lite-egp" target="_blank"
+              ><img
+                src="image/arcop.jpg"
+                alt="ARCOP"
+                title="Accéder au portail d'ARCOP"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://services.cnss.tg/services/login" target="_blank"
+              ><img
+                src="image/cnss.png"
+                alt="CNSS"
+                title="Accéder au portail de la CNSS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.cfetogo.tg/portail_cfe.html" target="_blank"
+              ><img
+                src="image/cfe.png"
+                alt="CFE"
+                title="Accéder au portail du CFE"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3"
+              target="_blank"
+              ><img src="image/img1.png" alt="OTR DIMANA"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <h2>MALI</h2>
+        <div class="companies">
+          <div class="company">
+            <a href="https://www.dgi.gouv.ml/" target="_blank"
+              ><img
+                src="image/dgi_mali.jpeg"
+                alt="DGI Mali"
+                title="Accéder au portail DGI"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.dgi.gouv.ml/" target="_blank"
+              ><img src="image/cmss.png" alt="cmss"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.dgi.gouv.ml/" target="_blank"
+              ><img src="image/dgi_mali.jpeg" alt="DGI Mali"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <h2>CÔTE D’IVOIRE</h2>
+        <div class="companies">
+          <div class="company">
+            <a href="https://e-impots.gouv.ci/" target="_blank"
+              ><img src="image/e-impots.png" alt="DGI"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://www.services.fne.dgi.gouv.ci/fr/login"
+              target="_blank"
+              ><img src="image/fne.png" alt="FNE"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://e.cnps.ci/" target="_blank"
+              ><img src="image/cnss.ci.png" alt="CNSS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://e-impots.gouv.ci/" target="_blank"
+              ><img src="image/e-impots.png" alt="DGI"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://www.services.fne.dgi.gouv.ci/fr/login"
+              target="_blank"
+              ><img src="image/fne.png" alt="FNE"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://e.cnps.ci/" target="_blank"
+              ><img src="image/cnss.ci.png" alt="CNSS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <h2>BURKINA-FASO</h2>
+        <div class="companies">
+          <div class="company">
+            <a
+              href="https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3"
+              target="_blank"
+              ><img src="image/img1.png" alt="OTR DIMANA"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://gudef.otr.tg/" target="_blank"
+              ><img src="image/gudef.jpg" alt="OTR GUDEF"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://passe.arcop.tg/publics/lite-egp" target="_blank"
+              ><img src="image/arcop.jpg" alt="ARCOP"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://services.cnss.tg/services/login" target="_blank"
+              ><img src="image/cnss.png" alt="CNSS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.cfetogo.tg/portail_cfe.html" target="_blank"
+              ><img src="image/cfe.png" alt="CFE"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3"
+              target="_blank"
+              ><img src="image/img1.png" alt="OTR DIMANA"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <h2>NIGER</h2>
+        <div class="companies">
+          <div class="company">
+            <a href="https://www.dgi.gouv.ml/" target="_blank"
+              ><img src="image/dgi_mali.jpeg" alt="DGI Mali"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.mde.ne/" target="_blank"
+              ><img src="image/logome.png" alt="mde"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://cciniger.org/" target="_blank"
+              ><img src="image/logoccin.jpg" alt="ccin"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://www.developmentaid.org/organizations/view/410648/cnpg-centre-national-de-perfectionnement-a-la-gestion"
+              target="_blank"
+              ><img src="image/logodev.svg" alt="dev"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://niger.eregulations.org/" target="_blank"
+              ><img src="image/logoeregulation.png" alt="eregulation"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="http://www.cman.ne" target="_blank"
+              ><img src="image/cman.webp" alt="cman"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.anipex.org/" target="_blank"
+              ><img src="image/anipex_logo.png" alt="anipex"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.armp-niger.org/" target="_blank"
+              ><img src="image/armp-logo.jpg" alt="armp"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <h2>ANIEK - KEINA Group - BAT Company</h2>
+        <div class="services">
+          <div class="service">
+            <img src="image/img1.png" alt="OTR DIMANA" />
+          </div>
+          <div class="service">
+            <img src="image/gudef.jpg" alt="OTR GUDEF" />
+          </div>
+          <div class="service"><img src="image/arcop.jpg" alt="DRCUP" /></div>
+          <div class="service"><img src="image/cnss.png" alt="CNSS" /></div>
+          <div class="service"><img src="image/cfe.png" alt="CFE" /></div>
+        </div>
+      </section>
+
+      <!-- SECTION TOGO -->
+      <section id="togo" class="country" style="display: none">
+        <h2>TOGO</h2>
+
+        <div class="companies">
+          <div class="company">
+            <a
+              href="https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3"
+              target="_blank"
+              ><img src="image/img1.png" alt="OTR DIMANA"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://gudef.otr.tg/" target="_blank"
+              ><img src="image/gudef.jpg" alt="OTR GUDEF"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://passe.arcop.tg/publics/lite-egp" target="_blank"
+              ><img src="image/arcop.jpg" alt="ARCOP"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://services.cnss.tg/services/login" target="_blank"
+              ><img src="image/cnss.png" alt="CNSS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.cfetogo.tg/portail_cfe.html" target="_blank"
+              ><img src="image/cfe.png" alt="CFE"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3"
+              target="_blank"
+              ><img src="image/img1.png" alt="OTR DIMANA"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <!-- TABLEAU TOGO -->
+
+        <div class="country-table-grid">
+          <table class="country-contact-table">
+            <tr>
+              <th colspan="2">Nos informations</th>
+            </tr>
+            <tr>
+              <td data-label="Commercial">Régistre de commerce</td>
+              <td>TG-LFW-01-2023-B12-00015</td>
+            </tr>
+            <tr>
+              <td data-label="Fiscale">Immatriculation fiscale</td>
+              <td>1001331977</td>
+            </tr>
+            <tr>
+              <td data-label="Téléphone">Téléphone standard</td>
+              <td>70 59 67 44</td>
+            </tr>
+            <tr>
+              <td data-label="BP">Boîte postale</td>
+              <td>01BP 3903</td>
+            </tr>
+            <tr>
+              <td data-label="E-mail">E-mail</td>
+              <td>
+                <a href="mailto:info@aniekgroup.com">info@aniekgroup.com</a>
+              </td>
+            </tr>
+          </table>
+
+          <table class="country-contact-table reminder-table">
+            <tr>
+              <th colspan="2">Rappels mensuels</th>
+            </tr>
+            <tr>
+              <td data-label="AO">Prévisions</td>
+              <td>Le 1er / mois</td>
+            </tr>
+            <tr>
+              <td data-label="Salaires">Préparer les salaires</td>
+              <td>Le 27 / mois</td>
+            </tr>
+            <tr>
+              <td data-label="CNSS">Déclaration CNSS</td>
+              <td>Le 5 / mois</td>
+            </tr>
+            <tr>
+              <td data-label="TVA OTR">Déclaration TVA OTR</td>
+              <td>Le 10 / mois</td>
+            </tr>
+            <tr>
+              <td data-label="Ecritures">Rapprochement des écritures</td>
+              <td>Le 30 ou 31 / mois</td>
+            </tr>
+            <tr>
+              <td colspan="2" class="forecast-note">
+                * Prévision : Frais administratifs pour les dossiers d'appels
+                d'offres, fournitures (cartouches, papier et tous les
+                indispensables).
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="address-strip" aria-label="Adresses">
+          <strong>Adresse de livraison :</strong>
+          <span>42 All. des Acacias, 78250 Meulan-en-Yvelines, France</span>
+          <span class="address-separator" aria-hidden="true">|</span>
+          <span>Kalkoven 291820 Melsbroek, Belgique</span>
+        </div>
+      </section>
+
+      <!-- SECTION MALI -->
+      <section id="mali" class="country" style="display: none">
+        <h2>MALI</h2>
+
+        <div class="companies">
+          <div class="company">
+            <a href="https://www.dgi.gouv.ml/" target="_blank"
+              ><img src="image/dgi_mali.jpeg" alt="DGI Mali"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.dgi.gouv.ml/" target="_blank"
+              ><img src="image/cmss.png" alt="cmss"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.dgi.gouv.ml/" target="_blank"
+              ><img src="image/dgi_mali.jpeg" alt="DGI Mali"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <!-- TABLEAU MALI -->
+
+        <table class="country-contact-table">
+          <tr>
+            <th colspan="2">Nos informations</th>
+          </tr>
+          <tr>
+            <td data-label="Commercial">Numéro commercial</td>
+            <td>+223 73 25 09 43</td>
+          </tr>
+          <tr>
+            <td data-label="Fiscale">Immatriculation fiscale</td>
+            <td>085152418R</td>
+          </tr>
+          <tr>
+            <td data-label="E-mail">E-mail</td>
+            <td>
+              <a href="mailto:ml.keina@keinagroup.com"
+                >ml.keina@keinagroup.com</a
+              >
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- SECTION CÔTE D'IVOIRE -->
+      <section id="cote-d-ivoire" class="country" style="display: none">
+        <h2>CÔTE D’IVOIRE</h2>
+
+        <div class="companies">
+          <div class="company">
+            <a href="https://e-impots.gouv.ci/" target="_blank"
+              ><img src="image/e-impots.png" alt="DGI"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://www.services.fne.dgi.gouv.ci/fr/login"
+              target="_blank"
+              ><img src="image/fne.png" alt="FNE"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://e.cnps.ci/" target="_blank"
+              ><img src="image/cnss.ci.png" alt="CNSS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://e-impots.gouv.ci/" target="_blank"
+              ><img src="image/e-impots.png" alt="DGI"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://www.services.fne.dgi.gouv.ci/fr/login"
+              target="_blank"
+              ><img src="image/fne.png" alt="FNE"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://e.cnps.ci/" target="_blank"
+              ><img src="image/cnss.ci.png" alt="CNSS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <!-- TABLEAU CÔTE D'IVOIRE -->
+
+        <table class="country-contact-table">
+          <tr>
+            <th colspan="2">Nos informations</th>
+          </tr>
+          <tr>
+            <td data-label="Commercial">Numéro commercial</td>
+            <td>+225 07 57 71 71 11</td>
+          </tr>
+          <tr>
+            <td data-label="Fiscale">Immatriculation fiscale</td>
+            <td>2242815N</td>
+          </tr>
+          <tr>
+            <td data-label="E-mail">E-mail</td>
+            <td>
+              <a href="mailto:ci.keina@keinagroup.com"
+                >ci.keina@keinagroup.com</a
+              >
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- SECTION BURKINA-FASO -->
+      <section id="brukina-faso" class="country" style="display: none">
+        <h2>BURKINA-FASO</h2>
+        <div class="companies">
+          <div class="company">
+            <a
+              href="https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3"
+              target="_blank"
+              ><img src="image/img1.png" alt="OTR DIMANA"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://gudef.otr.tg/" target="_blank"
+              ><img src="image/gudef.jpg" alt="OTR GUDEF"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://passe.arcop.tg/publics/lite-egp" target="_blank"
+              ><img src="image/arcop.jpg" alt="ARCOP"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://services.cnss.tg/services/login" target="_blank"
+              ><img src="image/cnss.png" alt="CNSS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.cfetogo.tg/portail_cfe.html" target="_blank"
+              ><img src="image/cfe.png" alt="CFE"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://dimana.otr.tg/ETaxe/faces/authentification?_adf.ctrl-state=16erzj2ztf_3"
+              target="_blank"
+              ><img src="image/img1.png" alt="OTR DIMANA"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <!-- TABLEAU TOGO -->
+
+        <table class="country-contact-table">
+          <tr>
+            <th colspan="2">Nos informations</th>
+          </tr>
+          <tr>
+            <td data-label="Commercial">Numéro commercial</td>
+            <td>22 20 29 64</td>
+          </tr>
+          <tr>
+            <td data-label="Fiscale">Immatriculation fiscale</td>
+            <td>1001331977</td>
+          </tr>
+          <tr>
+            <td data-label="Téléphone">Téléphone standard</td>
+            <td>70 59 67 44</td>
+          </tr>
+          <tr>
+            <td data-label="BP">Boîte postale</td>
+            <td>01BP 3903</td>
+          </tr>
+          <tr>
+            <td data-label="E-mail">E-mail</td>
+            <td>
+              <a href="mailto:info@aniekgroup.com">info@aniekgroup.com</a>
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- SECTION NIGER -->
+      <section id="niger" class="country" style="display: none">
+        <h2>NIGER</h2>
+        <div class="companies">
+          <div class="company">
+            <a href="https://www.dgi.gouv.ml/" target="_blank"
+              ><img src="image/dgi_mali.jpeg" alt="DGI Mali"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.mde.ne/" target="_blank"
+              ><img src="image/logome.png" alt="mde"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://cciniger.org/" target="_blank"
+              ><img src="image/logoccin.jpg" alt="ccin"
+            /></a>
+          </div>
+          <div class="company">
+            <a
+              href="https://www.developmentaid.org/organizations/view/410648/cnpg-centre-national-de-perfectionnement-a-la-gestion"
+              target="_blank"
+              ><img src="image/logodev.svg" alt="dev"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.odoo.com/fr_FR/my/databases" target="_blank"
+              ><img src="image/odoo.jpg" alt="odoo"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://niger.eregulations.org/" target="_blank"
+              ><img src="image/logoeregulation.png" alt="eregulation"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="http://www.cman.ne" target="_blank"
+              ><img src="image/cman.webp" alt="cman"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.anipex.org/" target="_blank"
+              ><img src="image/anipex_logo.png" alt="anipex"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.armp-niger.org/" target="_blank"
+              ><img src="image/armp-logo.jpg" alt="armp"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+          <div class="company">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="GMS"
+            /></a>
+          </div>
+        </div>
+
+        <!-- TABLEAU TOGO -->
+
+        <table class="country-contact-table">
+          <tr>
+            <th colspan="2">Nos informations</th>
+          </tr>
+          <tr>
+            <td data-label="Commercial">Numéro commercial</td>
+            <td>22 20 29 64</td>
+          </tr>
+          <tr>
+            <td data-label="Fiscale">Immatriculation fiscale</td>
+            <td>1001331977</td>
+          </tr>
+          <tr>
+            <td data-label="Téléphone">Téléphone standard</td>
+            <td>70 59 67 44</td>
+          </tr>
+          <tr>
+            <td data-label="BP">Boîte postale</td>
+            <td>01BP 3903</td>
+          </tr>
+          <tr>
+            <td data-label="E-mail">E-mail</td>
+            <td>
+              <a href="mailto:info@aniekgroup.com">info@aniekgroup.com</a>
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- SECTION ANIEK -->
+      <section id="aniek" class="country last-country" style="display: none">
+        <h2>ANIEK - KEINA Group - BAT Company</h2>
+        <div class="services">
+          <div class="service">
+            <img src="image/img1.png" alt="OTR DIMANA" />
+          </div>
+          <div class="service">
+            <img src="image/gudef.jpg" alt="OTR GUDEF" />
+          </div>
+          <div class="service"><img src="image/arcop.jpg" alt="DRCUP" /></div>
+          <div class="service"><img src="image/cnss.png" alt="CNSS" /></div>
+          <div class="service"><img src="image/cfe.png" alt="CFE" /></div>
+        </div>
+      </section>
+
+      <!-- SECTION NOS COMPAGNIES (APRÈS LES TABLEAUX) -->
+      <section class="enterprise-page">
+        <h2>NOS COMPAGNIES</h2>
+        <div class="services">
+          <div class="service">
+            <a href="https://www.aniekgroup.com/" target="_blank"
+              ><img src="image/ANIEKGROUP.webp" alt="ANIEKGROUP"
+            /></a>
+          </div>
+          <div class="service">
+            <a href="https://www.aptint.com/fr" target="_blank"
+              ><img src="image/apt.jpeg" alt="APT"
+            /></a>
+          </div>
+          <div class="service">
+            <a href="https://kbsconstruct.com/" target="_blank"
+              ><img src="image/kbsc.jpg" alt="KBSC"
+            /></a>
+          </div>
+          <div class="service">
+            <a href="https://www.keinagroup.com/" target="_blank"
+              ><img src="image/keinagroup.jpeg" alt="keinagroup"
+            /></a>
+          </div>
+          <div class="service">
+            <a href="https://" target="_blank"
+              ><img src="image/anuba.jpg" alt="ANUBA"
+            /></a>
+          </div>
+          <div class="service">
+            <a href="https://" target="_blank"
+              ><img src="image/Neyla.jpg" alt="Neyla"
+            /></a>
+          </div>
+        </div>
+      </section>
+
+      <script>
+        function showSection(sectionId) {
+          document.querySelectorAll(".country").forEach((section) => {
+            section.style.display = "none";
+          });
+          document.getElementById(sectionId).style.display = "block";
+        }
+        showSection("overview");
+      </script>
+    </main>
+
+    <footer class="main-footer">
+      <div class="footer-content">
+        <p>&copy; 2026 ANIEK & AYO. Tous droits réservés.</p>
+        <div class="social-links">
+          <a
+            href="https://www.facebook.com/aniekgroup/"
+            title="Facebook"
+            target="_blank"
+            >Facebook</a
+          >
+          <a
+            href="https://www.linkedin.com/company/aniekgroup"
+            title="LinkedIn"
+            target="_blank"
+            >LinkedIn</a
+          >
+          <a
+            href="https://www.aniekgroup.com/contactus"
+            title="Contact"
+            target="_blank"
+            >Contact</a
+          >
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
