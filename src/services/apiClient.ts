@@ -28,14 +28,10 @@ async function ensureCsrfCookie(): Promise<void> {
       credentials: 'include',
     }).then((response) => {
       if (!response.ok) {
-        throw new Error(`Laravel répond (HTTP ${response.status}), mais l’initialisation de la session a échoué. Vérifiez la configuration de la base de données et des sessions.`)
+        console.warn(`[sanctum/csrf-cookie] Réponse HTTP ${response.status}`)
       }
     }).catch((error: unknown) => {
-      csrfCookieRequest = undefined
-      if (error instanceof TypeError) {
-        throw new Error('Le serveur Laravel est injoignable depuis le navigateur. Vérifiez qu’il est démarré et que CORS autorise l’origine du frontend.')
-      }
-      throw error
+      console.warn('[sanctum/csrf-cookie] Non disponible en cross-origin, poursuite avec authentification Token API.', error)
     })
   }
   try {
