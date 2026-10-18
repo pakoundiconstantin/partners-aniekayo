@@ -20,36 +20,34 @@ export function SiteHeader({ showCountryFlags = true, countryNavigation, activeC
 
   return (
     <header className="site-header">
-      <div className="site-header__main">
-        <Link to="/" className="brand" aria-label="ANIEK & AYO Group Services, accueil"><img src="/media/partners/ANIEKGROUP.webp" alt="ANIEK & AYO" /></Link>
-        <nav className="main-nav" aria-label="Navigation principale">
-          <NavLink to="/" end className={({ isActive }) => isActive ? 'is-active' : ''}>Accueil</NavLink>
-          <NavLink to="/partners" className={({ isActive }) => isActive ? 'is-active' : ''}>Partenaires</NavLink>
-        </nav>
-      </div>
-      {showCountryFlags && (
-        <div className="flag-nav" aria-label="Choisir un pays">
-          {countries.map((country) => (
-            onCountrySelect ? (
-              <button
-                key={country.id}
-                type="button"
-                className={activeCountry === country.id ? 'is-active' : ''}
-                onClick={() => onCountrySelect(country.id)}
-                title={country.label}
-                aria-label={country.label}
-                aria-pressed={activeCountry === country.id}
-              >
-                <img src={country.flag} alt="" />
-              </button>
-            ) : (
-              <Link key={country.id} to={`/#${country.id}`} title={country.label} aria-label={country.label}>
-                <img src={country.flag} alt="" />
-              </Link>
-            )
-          ))}
-        </div>
-      )}
+      <Link to="/" className="brand" aria-label="ANIEK & AYO Group Services, accueil"><img src="/media/partners/ANIEKGROUP.webp" alt="ANIEK & AYO" /></Link>
+      <nav className="main-nav" aria-label="Navigation principale">
+        <NavLink to="/" end>Accueil</NavLink>
+        <NavLink to="/partners">Partenaires</NavLink>
+        {showCountryFlags && (
+          <div className="flag-nav" aria-label="Choisir un pays">
+            {countries.map((country) => (
+              onCountrySelect ? (
+                <button
+                  key={country.id}
+                  type="button"
+                  className={activeCountry === country.id ? 'is-active' : ''}
+                  onClick={() => onCountrySelect(country.id)}
+                  title={country.label}
+                  aria-label={country.label}
+                  aria-pressed={activeCountry === country.id}
+                >
+                  <img src={country.flag} alt="" />
+                </button>
+              ) : (
+                <Link key={country.id} to={`/#${country.id}`} title={country.label} aria-label={country.label}>
+                  <img src={country.flag} alt="" />
+                </Link>
+              )
+            ))}
+          </div>
+        )}
+      </nav>
     </header>
   )
 }
